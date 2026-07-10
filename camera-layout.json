@@ -21,30 +21,30 @@
  },
  {
   "code": "C3",
-  "ri": 2,
-  "x": 8,
-  "y": 235,
-  "dir": 0,
-  "type": "hq6",
+  "ri": 3,
+  "x": 5,
+  "y": 488,
+  "dir": 315,
+  "type": "usb",
   "ci": 0,
   "on": true
  },
  {
   "code": "C4",
   "ri": 2,
-  "x": 907,
-  "y": 230,
-  "dir": 180,
-  "type": "hq6",
+  "x": 906,
+  "y": 7,
+  "dir": 120,
+  "type": "usb",
   "ci": 1,
   "on": true
  },
  {
   "code": "C5",
   "ri": 2,
-  "x": 600,
-  "y": 8,
-  "dir": 90,
+  "x": 894,
+  "y": 444,
+  "dir": 225,
   "type": "usb",
   "ci": 2,
   "on": true
@@ -52,9 +52,9 @@
  {
   "code": "C6",
   "ri": 0,
-  "x": 104,
-  "y": 127,
-  "dir": 210,
+  "x": 9,
+  "y": 306,
+  "dir": 330,
   "type": "usb",
   "ci": 0,
   "on": true
@@ -85,7 +85,7 @@
   "x": 180,
   "y": 492,
   "dir": 270,
-  "type": "hq6",
+  "type": "usb",
   "ci": 0,
   "on": true
  },
@@ -177,6 +177,126 @@
   "dir": 352,
   "type": "usb",
   "ci": 3,
+  "on": true
+ },
+ {
+  "code": "C19",
+  "ri": 1,
+  "x": 549,
+  "y": 262,
+  "dir": 206,
+  "type": "usb",
+  "ci": 3,
+  "on": true
+ },
+ {
+  "code": "C20",
+  "ri": 3,
+  "x": 5,
+  "y": 5,
+  "dir": 24,
+  "type": "usb",
+  "ci": 1,
+  "on": true
+ },
+ {
+  "code": "C21",
+  "ri": 3,
+  "x": 1079,
+  "y": 20,
+  "dir": 151,
+  "type": "usb",
+  "ci": 2,
+  "on": true
+ },
+ {
+  "code": "C22",
+  "ri": 2,
+  "x": 5,
+  "y": 449,
+  "dir": 332,
+  "type": "usb",
+  "ci": 2,
+  "on": true
+ },
+ {
+  "code": "C23",
+  "ri": 2,
+  "x": 9,
+  "y": 9,
+  "dir": 17,
+  "type": "usb",
+  "ci": 3,
+  "on": true
+ },
+ {
+  "code": "C24",
+  "ri": 2,
+  "x": 406,
+  "y": 452,
+  "dir": 272,
+  "type": "usb",
+  "ci": 0,
+  "on": true
+ },
+ {
+  "code": "C25",
+  "ri": 2,
+  "x": 491,
+  "y": 6,
+  "dir": 97,
+  "type": "usb",
+  "ci": 1,
+  "on": true
+ },
+ {
+  "code": "C26",
+  "ri": 2,
+  "x": 290,
+  "y": 5,
+  "dir": 16,
+  "type": "usb",
+  "ci": 2,
+  "on": true
+ },
+ {
+  "code": "C27",
+  "ri": 2,
+  "x": 218,
+  "y": 5,
+  "dir": 94,
+  "type": "usb",
+  "ci": 3,
+  "on": true
+ },
+ {
+  "code": "C28",
+  "ri": 2,
+  "x": 800,
+  "y": 5,
+  "dir": 135,
+  "type": "usb",
+  "ci": 0,
+  "on": true
+ },
+ {
+  "code": "C29",
+  "ri": 2,
+  "x": 240,
+  "y": 455,
+  "dir": 284,
+  "type": "usb",
+  "ci": 1,
+  "on": true
+ },
+ {
+  "code": "C30",
+  "ri": 4,
+  "x": 84,
+  "y": 252,
+  "dir": 234,
+  "type": "usb",
+  "ci": 2,
   "on": true
  }
 ]
