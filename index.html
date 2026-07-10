@@ -1,0 +1,2826 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Netholabs Data Collection Hub</title>
+<style>
+
+  :root{
+    --paper:#f6f4ee;
+    --sheet:#fdfcf8;
+    --ink:#2a2e33;
+    --ink2:#6b7178;
+    --ink3:#a9aeb4;
+    --anno:#b0432c;
+    --hatch:#b9bcc0;
+    --glass:#6f9cbd;
+    --border:#d8d5cc;
+    --cam1:#2a78d6; --cam2:#1baf7a; --cam3:#eda100; --cam4:#008300;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#0f161d;
+      --sheet:#141d26;
+      --ink:#d9e4ee;
+      --ink2:#8fa1b2;
+      --ink3:#55677a;
+      --anno:#e08a67;
+      --hatch:#3a4c5d;
+      --glass:#79a8cc;
+      --border:#26333f;
+      --cam1:#3987e5; --cam2:#199e70; --cam3:#c98500; --cam4:#008300;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0f161d; --sheet:#141d26; --ink:#d9e4ee; --ink2:#8fa1b2; --ink3:#55677a;
+    --anno:#e08a67; --hatch:#3a4c5d; --glass:#79a8cc; --border:#26333f;
+    --cam1:#3987e5; --cam2:#199e70; --cam3:#c98500; --cam4:#008300;
+  }
+  :root[data-theme="light"]{
+    --paper:#f6f4ee; --sheet:#fdfcf8; --ink:#2a2e33; --ink2:#6b7178; --ink3:#a9aeb4;
+    --anno:#b0432c; --hatch:#b9bcc0; --glass:#6f9cbd; --border:#d8d5cc;
+    --cam1:#2a78d6; --cam2:#1baf7a; --cam3:#eda100; --cam4:#008300;
+  }
+  *{box-sizing:border-box}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Segoe UI",-apple-system,system-ui,sans-serif;
+    margin:0;
+    padding:32px 16px 64px;
+  }
+  .wrap{max-width:1060px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+  header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px;border-bottom:2px solid var(--ink);padding-bottom:12px}
+  header h1{font-size:20px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin:0}
+  header .meta{font-family:Consolas,ui-monospace,monospace;font-size:12.5px;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .sheet{
+    background:var(--sheet);
+    border:1.5px solid var(--ink);
+    padding:18px 18px 0;
+  }
+  .sheet-inner{overflow-x:auto}
+  svg{display:block;width:100%;height:auto}
+  .titleblock{
+    display:flex;flex-wrap:wrap;border-top:1.5px solid var(--ink);
+    margin:14px -18px 0;padding:8px 18px 9px;gap:0 34px;
+    font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);
+  }
+  .titleblock b{color:var(--ink);font-weight:600;letter-spacing:.1em}
+  .titleblock .cell{display:flex;flex-direction:column;gap:1px;padding:2px 0}
+  .titleblock .cell span:first-child{font-size:8.5px;color:var(--ink3)}
+  .notes{
+    background:var(--sheet);border:1.5px solid var(--ink);padding:18px 22px 20px;
+  }
+  .notes h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 10px;font-weight:600}
+  .notes ol{margin:0;padding-left:20px;font-size:13.5px;line-height:1.65;color:var(--ink2);max-width:70ch}
+  .notes li::marker{font-family:Consolas,ui-monospace,monospace;color:var(--anno);font-size:12px}
+  .roomhead{
+    display:flex;align-items:center;gap:14px;margin-top:10px;
+    font-size:13px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;color:var(--ink);
+  }
+  .roomhead::after{content:"";flex:1;border-top:1.5px solid var(--ink)}
+  .roomhead span{color:var(--ink2);font-weight:400;letter-spacing:.12em;font-size:11px}
+
+  /* SVG drawing classes */
+  .w{stroke:var(--ink);stroke-width:2;fill:none;stroke-linecap:square}
+  .w1{stroke:var(--ink);stroke-width:1.1;fill:none;stroke-linecap:square}
+  .furn{stroke:var(--ink2);stroke-width:.9;fill:none}
+  .dash{stroke:var(--ink2);stroke-width:.9;fill:none;stroke-dasharray:5 3.4}
+  .thin{stroke:var(--ink3);stroke-width:.65;fill:none}
+  .glassln{stroke:var(--glass);stroke-width:1.2;fill:none}
+  .dimln{stroke:var(--anno);stroke-width:.7;fill:none}
+  .dimtx{fill:var(--anno);font-family:Consolas,ui-monospace,monospace;font-size:11px;font-variant-numeric:tabular-nums}
+  .lbl{fill:var(--ink2);font-family:"Segoe UI",system-ui,sans-serif;font-size:8.6px;letter-spacing:.09em}
+  .lbl2{fill:var(--ink);font-family:"Segoe UI",system-ui,sans-serif;font-size:10.5px;letter-spacing:.16em;font-weight:600}
+  .mk{fill:var(--sheet);stroke:var(--ink);stroke-width:1.2}
+  .mktx{fill:var(--ink);font-family:Consolas,ui-monospace,monospace;font-size:12px;font-weight:700}
+
+  @page{size:A4 landscape;margin:10mm}
+  @media print{
+    :root, :root[data-theme="dark"]{
+      --paper:#ffffff; --sheet:#ffffff; --ink:#1c1f22; --ink2:#5a6066;
+      --ink3:#9aa0a5; --anno:#9c3a26; --hatch:#b5b8bc; --glass:#54809f; --border:#cccccc;
+      --cam1:#2a78d6; --cam2:#1baf7a; --cam3:#eda100; --cam4:#008300;
+    }
+    body{background:#fff;padding:0}
+    .wrap{max-width:none;gap:10px}
+    .roomhead{display:none}
+    .sheet,.notes{break-before:page;page-break-before:always;border-width:1px}
+    header + .sheet{break-before:auto;page-break-before:avoid}
+    .sheet-inner{overflow:visible}
+    svg{max-height:172mm;width:auto;max-width:100%;margin:0 auto}
+    .notes ol{max-width:none}
+  }
+
+</style>
+<style>
+
+  :root{
+    --paper:#f6f4ee; --ink:#2a2e33; --ink2:#6b7178; --sheet:#fdfcf8; --edge:#2a2e33;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#0f161d; --ink:#d9e4ee; --ink2:#8fa1b2; --sheet:#141d26; --edge:#d9e4ee; }
+  }
+  :root[data-theme="dark"]{ --paper:#0f161d; --ink:#d9e4ee; --ink2:#8fa1b2; --sheet:#141d26; --edge:#d9e4ee; }
+  :root[data-theme="light"]{ --paper:#f6f4ee; --ink:#2a2e33; --ink2:#6b7178; --sheet:#fdfcf8; --edge:#2a2e33; }
+  *{box-sizing:border-box}
+  
+  #gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+  #gl.dragging{cursor:grabbing}
+  .hud{position:fixed;top:14px;left:14px;background:var(--sheet);border:1.5px solid var(--edge);
+    padding:12px 16px;max-width:280px;color:var(--ink);box-shadow:0 2px 14px rgba(0,0,0,.18)}
+  .hud h1{font-size:13px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 2px;font-weight:600}
+  .hud .room{font-family:Consolas,ui-monospace,monospace;font-size:12px;color:var(--ink2);min-height:16px}
+  .hud .keys{font-size:11px;color:var(--ink2);line-height:1.55;margin-top:8px}
+  .hud .keys b{color:var(--ink);font-weight:600}
+  .bar{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:6px;flex-wrap:wrap;
+    justify-content:center;max-width:96vw}
+  .bar button{font-family:"Segoe UI",system-ui,sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    background:var(--sheet);color:var(--ink);border:1.5px solid var(--edge);padding:8px 12px;cursor:pointer}
+  .bar button:hover{background:var(--paper)}
+  .bar button.on{background:var(--edge);color:var(--paper)}
+  .pad{position:fixed;right:16px;bottom:64px;display:none;grid-template-columns:52px 52px 52px;gap:6px}
+  .pad button{width:52px;height:52px;border:1.5px solid var(--edge);background:var(--sheet);color:var(--ink);
+    font-size:18px;opacity:.9}
+  @media (pointer:coarse){ .pad{display:grid} }
+  .cams{position:fixed;top:14px;right:14px;background:var(--sheet);border:1.5px solid var(--edge);
+    padding:10px 12px 12px;width:208px;box-shadow:0 2px 14px rgba(0,0,0,.18);
+    max-height:calc(100vh - 120px);overflow-y:auto}
+  .cams .ct{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;
+    color:var(--ink);margin-bottom:6px}
+  .cams .rh{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);
+    margin:8px 0 4px;cursor:pointer;border:none;background:none;padding:0;display:block;text-align:left;
+    width:100%;font-weight:600}
+  .cams .rh:hover{color:var(--ink)}
+  .cams .rw{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px}
+  .cams .rw button{font-family:Consolas,ui-monospace,monospace;font-size:11px;padding:4px 7px;
+    border:2px solid;cursor:pointer;color:var(--ink);background:transparent}
+  .cams .rh2{font-size:10px;letter-spacing:.16em;color:var(--ink2);margin:10px 0 5px;font-weight:700;
+    border-top:1px solid var(--ink2);padding-top:9px}
+  .cams select{width:100%;font-size:11px;margin-bottom:6px;background:var(--sheet);color:var(--ink);
+    border:1.5px solid var(--edge);padding:4px}
+  .pip{position:fixed;right:16px;bottom:64px;border:2.5px solid var(--edge);display:none;pointer-events:none;
+    box-shadow:0 2px 14px rgba(0,0,0,.3)}
+  .pip .pl{position:absolute;top:0;left:0;background:rgba(0,0,0,.55);color:#fff;font-size:10px;
+    letter-spacing:.1em;padding:3px 7px;font-family:Consolas,ui-monospace,monospace}
+  @media (pointer:coarse){ .pip{bottom:130px} }
+
+</style>
+<style>
+.topnav{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;gap:6px;align-items:center;
+  background:var(--sheet);border-bottom:1.5px solid var(--ink);padding:9px 18px;flex-wrap:wrap}
+.topnav .brand{font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:12.5px;color:var(--ink);margin-right:12px}
+.topnav button{font-family:"Segoe UI",system-ui,sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  background:var(--sheet);color:var(--ink);border:1.5px solid var(--ink);padding:6px 11px;cursor:pointer}
+.topnav button:hover{background:var(--paper)}
+.topnav button.on{background:var(--ink);color:var(--paper)}
+main{padding-top:50px}
+.page{display:none}
+body.viewer3d{overflow:hidden}
+#view3d .hud{top:64px}
+#view3d .cams{top:64px;max-height:calc(100vh - 170px)}
+.ov{max-width:900px;margin:26px auto;padding:0 8px;color:var(--ink)}
+.ov h2{font-size:26px;letter-spacing:.06em;text-transform:uppercase;margin:8px 0 6px;font-weight:650;text-wrap:balance}
+.ov p{font-size:14.5px;line-height:1.7;color:var(--ink2);max-width:66ch}
+.ovgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:22px 0}
+.ovcard{border:1.5px solid var(--ink);background:var(--sheet);padding:12px 14px}
+.ovcard b{display:block;font-size:11px;letter-spacing:.13em;text-transform:uppercase;margin-bottom:4px}
+.ovcard span{font-family:Consolas,ui-monospace,monospace;font-size:12.5px;color:var(--ink2)}
+.ovbtns{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+.ovbtns button{font-size:12px;letter-spacing:.1em;text-transform:uppercase;background:var(--ink);color:var(--paper);
+  border:1.5px solid var(--ink);padding:10px 16px;cursor:pointer}
+.ovbtns button.sec{background:var(--sheet);color:var(--ink)}
+@media print{.topnav,#view3d,#page-overview{display:none!important}#page-drawings{display:block!important}body{overflow:visible}}
+</style>
+<nav class="topnav">
+<span class="brand">Netholabs · Data Collection Hub</span>
+<button data-p="overview" onclick="showPage('overview')">Overview</button>
+<button data-p="drawings" onclick="showPage('drawings')">Survey drawings</button>
+<button data-p="camplan" onclick="showPage('camplan')">Camera plan</button>
+<button data-p="viewer" onclick="showPage('viewer')">3D walkthrough</button>
+<button onclick="printDrawings()">Print / PDF</button>
+</nav>
+<main>
+<section id="page-overview" class="page">
+<div class="ov">
+<h2>Netholabs Data Collection Hub</h2>
+<p>Working documents for fitting out the office as a multi camera data collection space. Five rooms surveyed and drawn, camera optics worked out for the Arducam OV9782 USB global shutter and the Raspberry Pi HQ with 6 mm and 16 mm lenses, a first pass placement plan, and a live 3D walkthrough where camera positions can be iterated and exported.</p>
+<div class="ovgrid">
+<div class="ovcard"><b>Office</b><span>354 × 315 × 280</span></div>
+<div class="ovcard"><b>Lab</b><span>554 × 269 × 290</span></div>
+<div class="ovcard"><b>Cave</b><span>460 × 915 × 290 vault</span></div>
+<div class="ovcard"><b>Engineering</b><span>500 × 1100 × 305 jack arches</span></div>
+<div class="ovcard"><b>Robotics</b><span>384 × 1340 × 305 vault</span></div>
+</div>
+<div class="ovbtns">
+<button onclick="showPage('drawings')">Survey drawings · A-01 to A-15</button>
+<button onclick="showPage('camplan')">Camera coverage plan</button>
+<button onclick="showPage('viewer')">3D walkthrough + camera editor</button>
+<button class="sec" onclick="printDrawings()">Print / save as PDF</button>
+</div>
+<p>Camera working ranges: USB 112° for 0.8 to 2.8 m, HQ 6 mm 55° for 2.5 to 6.5 m, HQ 16 mm 22° for 6.5 to 14 m. In the walkthrough, select a camera to see its live view, move and aim it by clicking the floor, swap lens types, and export the layout as JSON when a plan is settled.</p>
+<p>Measured room envelopes are exact; furniture and fittings are indicative and can be hidden in the walkthrough. Survey notes under each drawing sheet list every assumed dimension.</p>
+</div>
+</section>
+<section id="page-drawings" class="page">
+
+
+<div class="wrap">
+  <header>
+    <h1>Room Survey Drawings</h1>
+    <div class="meta">OFFICE 354 &times; 315 &times; 280 &nbsp;|&nbsp; CAVE 460 &times; 915 &times; 290 &nbsp;|&nbsp; LAB 554 &times; 269 &times; 290 &nbsp;|&nbsp; ENGINEERING 500 &times; 1100 &times; 305 &nbsp;|&nbsp; ROBOTICS 384 &times; 1340 &times; 305 &nbsp;|&nbsp; CM</div>
+  </header>
+
+  <div class="roomhead">Room 1 · Office <span>354 × 315 · H 280</span></div>
+
+  <div class="sheet">
+    <div class="sheet-inner"><svg id="plan" viewBox="-96 -104 560 528"></svg></div>
+    <div class="titleblock">
+      <div class="cell"><span>Sheet</span><b>A-01 &nbsp;Floor Plan</b></div>
+      <div class="cell"><span>Project</span><b>Office room survey</b></div>
+      <div class="cell"><span>Date</span><b>10 Jul 2026</b></div>
+      <div class="cell"><span>Drawn</span><b>Netholabs</b></div>
+      <div class="cell"><span>Scale</span><b>Dimensions govern</b></div>
+    </div>
+  </div>
+
+  <div class="sheet">
+    <div class="sheet-inner">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:26px 30px;min-width:720px">
+        <svg id="elevA" viewBox="-72 -60 500 455"></svg>
+        <svg id="elevC" viewBox="-72 -60 500 455"></svg>
+        <svg id="elevD" viewBox="-72 -60 461 455"></svg>
+        <svg id="elevB" viewBox="-72 -60 461 455"></svg>
+      </div>
+    </div>
+    <div class="titleblock">
+      <div class="cell"><span>Sheet</span><b>A-02 &nbsp;Internal Elevations</b></div>
+      <div class="cell"><span>Project</span><b>Office room survey</b></div>
+      <div class="cell"><span>Date</span><b>10 Jul 2026</b></div>
+      <div class="cell"><span>Drawn</span><b>Netholabs</b></div>
+      <div class="cell"><span>Key</span><b>Markers A&ndash;D on plan</b></div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <h2>Survey notes · Room 1</h2>
+    <ol>
+      <li>Room dimensions 354 &times; 315 cm and ceiling height 280 cm are as measured on site. All other dimensions are estimated from the photographs and should be verified before setting out.</li>
+      <li>Wall A is exposed brick with a projecting brick pier at the A/D corner carrying a surface conduit, heat detector and a wall mounted fan.</li>
+      <li>Wall C is a glazed steel partition with a pair of doors, solid lower panels and glazing above to a transom at door head height.</li>
+      <li>Wall D carries an unused TV wall bracket plate with a twin socket below and a light switch near the door end.</li>
+      <li>Loose furniture (desk, chairs, stool, TV on mobile stand, boxes) is shown in its photographed position and is indicative only.</li>
+      <li>Wall thicknesses are assumed: brick 22 cm, partitions 12 cm.</li>
+    </ol>
+  </div>
+
+  <div class="roomhead">Room 2 · Cave <span>460 × 915 · H 290 at vault crown</span></div>
+
+  <div class="sheet">
+    <div class="sheet-inner"><svg id="cplan" viewBox="-125 -115 1210 768"></svg></div>
+    <div class="sheet-inner"><svg id="crcp" viewBox="-70 -55 1055 610"></svg></div>
+    <div class="titleblock">
+      <div class="cell"><span>Sheet</span><b>A-03 &nbsp;Cave Floor Plan + Reflected Ceiling Plan</b></div>
+      <div class="cell"><span>Project</span><b>Office room survey</b></div>
+      <div class="cell"><span>Date</span><b>10 Jul 2026</b></div>
+      <div class="cell"><span>Drawn</span><b>Netholabs</b></div>
+      <div class="cell"><span>Scale</span><b>Dimensions govern</b></div>
+    </div>
+  </div>
+
+  <div class="sheet">
+    <div class="sheet-inner"><svg id="celevE" viewBox="-80 -60 1075 440"></svg></div>
+    <div class="sheet-inner"><svg id="celevF" viewBox="-80 -60 1075 440"></svg></div>
+    <div class="titleblock">
+      <div class="cell"><span>Sheet</span><b>A-04 &nbsp;Cave Long Elevations</b></div>
+      <div class="cell"><span>Project</span><b>Office room survey</b></div>
+      <div class="cell"><span>Date</span><b>10 Jul 2026</b></div>
+      <div class="cell"><span>Drawn</span><b>Netholabs</b></div>
+      <div class="cell"><span>Key</span><b>Markers E&ndash;H + section A&ndash;A on plan</b></div>
+    </div>
+  </div>
+
+  <div class="sheet">
+    <div class="sheet-inner">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:26px 30px;min-width:720px">
+        <svg id="csect" viewBox="-84 -72 624 478"></svg>
+        <svg id="celevH" viewBox="-84 -72 624 478"></svg>
+        <svg id="celevG" viewBox="-84 -72 624 478"></svg>
+      </div>
+    </div>
+    <div class="titleblock">
+      <div class="cell"><span>Sheet</span><b>A-05 &nbsp;Cave Section + End Elevations</b></div>
+      <div class="cell"><span>Project</span><b>Office room survey</b></div>
+      <div class="cell"><span>Date</span><b>10 Jul 2026</b></div>
+      <div class="cell"><span>Drawn</span><b>Netholabs</b></div>
+      <div class="cell"><span>Key</span><b>Section A&ndash;A cut at x = 460, looking east</b></div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <h2>Survey notes · Room 2 (Cave)</h2>
+    <ol>
+      <li>Plan dimensions 460 &times; 915 cm and 290 cm height are as measured on site. The 290 is taken as the height at the vault crown; the springing height of 235 cm at the long walls is estimated from the photographs.</li>
+      <li>The ceiling is a shallow plastered barrel vault spanning the 460 cm width, crossed by four steel arch ribs. Two suspended linear luminaires run end to end along the centreline below the ribs, and a continuous LED cove on a steel edge channel washes both long brick walls.</li>
+      <li>Both long walls are exposed brick with projecting piers; pier positions are approximate.</li>
+      <li>The west end is a dark green painted partition with a ventilation grille, open both sides: the south opening leads to the entrance stair and external gate, the north opening to a window bay. The survey extent stops at the partition face.</li>
+      <li>The east end is a white plastered wall with a steel door (vision panel) at the south corner, an acoustic booth and a black console table against it.</li>
+      <li>Loose furniture (desks, racking with camera rigs, rig tables, round table, plinths, mobile whiteboard) is shown in its photographed position and is indicative only.</li>
+    </ol>
+  </div>
+
+  <div class="roomhead">Room 3 · Lab <span>554 × 269 · H 290 at vault crown</span></div>
+
+  <div class="sheet">
+    <div class="sheet-inner"><svg id="lplan" viewBox="-105 -105 790 560"></svg></div>
+    <div class="sheet-inner"><svg id="lrcp" viewBox="-70 -55 700 430"></svg></div>
+    <div class="titleblock">
+      <div class="cell"><span>Sheet</span><b>A-06 &nbsp;Lab Floor Plan + Reflected Ceiling Plan</b></div>
+      <div class="cell"><span>Project</span><b>Office room survey</b></div>
+      <div class="cell"><span>Date</span><b>10 Jul 2026</b></div>
+      <div class="cell"><span>Drawn</span><b>Netholabs</b></div>
+      <div class="cell"><span>Scale</span><b>Dimensions govern</b></div>
+    </div>
+  </div>
+
+  <div class="sheet">
+    <div class="sheet-inner"><svg id="lelevJ" viewBox="-80 -60 714 460"></svg></div>
+    <div class="sheet-inner"><svg id="lelevK" viewBox="-80 -60 714 460"></svg></div>
+    <div class="titleblock">
+      <div class="cell"><span>Sheet</span><b>A-07 &nbsp;Lab Long Elevations</b></div>
+      <div class="cell"><span>Project</span><b>Office room survey</b></div>
+      <div class="cell"><span>Date</span><b>10 Jul 2026</b></div>
+      <div class="cell"><span>Drawn</span><b>Netholabs</b></div>
+      <div class="cell"><span>Key</span><b>Markers J&ndash;M + section B&ndash;B on plan</b></div>
+    </div>
+  </div>
+
+  <div class="sheet">
+    <div class="sheet-inner">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:26px 30px;min-width:720px">
+        <svg id="lsect" viewBox="-84 -80 437 486"></svg>
+        <svg id="lelevM" viewBox="-84 -80 437 486"></svg>
+        <svg id="lelevL" viewBox="-84 -80 437 486"></svg>
+      </div>
+    </div>
+    <div class="titleblock">
+      <div class="cell"><span>Sheet</span><b>A-08 &nbsp;Lab Section + End Elevations</b></div>
+      <div class="cell"><span>Project</span><b>Office room survey</b></div>
+      <div class="cell"><span>Date</span><b>10 Jul 2026</b></div>
+      <div class="cell"><span>Drawn</span><b>Netholabs</b></div>
+      <div class="cell"><span>Key</span><b>Section B&ndash;B cut at x = 380, looking east</b></div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <h2>Survey notes · Room 3 (Lab) · resurveyed 10 Jul 2026</h2>
+    <ol>
+      <li>Plan dimensions 554 &times; 269 cm and 290 cm height are as measured on site. The ceiling is flat painted plaster at 290, carrying two large suspended LED panels (approx. 120 &times; 120) on drop rods.</li>
+      <li>The north long wall is exposed brick with two blind arch recesses (springing approx. 185, crown approx. 235) over a raised brick plinth approx. 65 high. A steel chequer plate trench cover with heating pipework runs along its base.</li>
+      <li>On the brick wall: two radiators, the WiFi router and a socket cluster on the plinth, a heat detector on vertical flexible conduit, and a wall mounted fan near the east end.</li>
+      <li>The west end is the painted geometric mural wall, with a glazed screen and door at its south corner leading to the corridor and stair.</li>
+      <li>The south long wall and east end wall are plain painted plaster with a twin socket on each and a light switch beside the west door.</li>
+      <li>The floor is timber boards throughout. The pill shaped desk with projector and the chairs are shown in photographed positions and are indicative only.</li>
+    </ol>
+  </div>
+
+  <div class="roomhead">Room 4 · Engineering <span>500 × 1100 · H 305 at arch crown</span></div>
+
+  <div class="sheet">
+    <div class="sheet-inner"><svg id="eplan" viewBox="-125 -115 1400 845"></svg></div>
+    <div class="sheet-inner"><svg id="ercp" viewBox="-70 -60 1240 700"></svg></div>
+    <div class="titleblock">
+      <div class="cell"><span>Sheet</span><b>A-09 &nbsp;Engineering Floor Plan + Reflected Ceiling Plan</b></div>
+      <div class="cell"><span>Project</span><b>Office room survey</b></div>
+      <div class="cell"><span>Date</span><b>10 Jul 2026</b></div>
+      <div class="cell"><span>Drawn</span><b>Netholabs</b></div>
+      <div class="cell"><span>Scale</span><b>Dimensions govern</b></div>
+    </div>
+  </div>
+
+  <div class="sheet">
+    <div class="sheet-inner"><svg id="eelevN" viewBox="-80 -60 1260 520"></svg></div>
+    <div class="sheet-inner"><svg id="eelevP" viewBox="-80 -60 1260 520"></svg></div>
+    <div class="titleblock">
+      <div class="cell"><span>Sheet</span><b>A-10 &nbsp;Engineering Long Elevations</b></div>
+      <div class="cell"><span>Project</span><b>Office room survey</b></div>
+      <div class="cell"><span>Date</span><b>10 Jul 2026</b></div>
+      <div class="cell"><span>Drawn</span><b>Netholabs</b></div>
+      <div class="cell"><span>Key</span><b>Markers N&ndash;R + section C&ndash;C on plan</b></div>
+    </div>
+  </div>
+
+  <div class="sheet">
+    <div class="sheet-inner">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:26px 30px;min-width:720px">
+        <svg id="esect" viewBox="-84 -80 668 505"></svg>
+        <svg id="eelevQ" viewBox="-84 -80 668 505"></svg>
+        <svg id="eelevR" viewBox="-84 -80 668 505"></svg>
+      </div>
+    </div>
+    <div class="titleblock">
+      <div class="cell"><span>Sheet</span><b>A-11 &nbsp;Engineering Section + End Elevations</b></div>
+      <div class="cell"><span>Project</span><b>Office room survey</b></div>
+      <div class="cell"><span>Date</span><b>10 Jul 2026</b></div>
+      <div class="cell"><span>Drawn</span><b>Netholabs</b></div>
+      <div class="cell"><span>Key</span><b>Section C&ndash;C cut at x = 560, looking east</b></div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <h2>Survey notes · Room 4 (Engineering)</h2>
+    <ol>
+      <li>Plan dimensions 500 &times; 1100 cm and 305 cm height are as measured on site. The 305 is taken at the crown of the brick jack arches; the steel beam soffit at 280 cm is estimated from the photographs.</li>
+      <li>The ceiling is brick jack arches spanning between steel beams that cross the 500 cm width at roughly 220 cm centres. An aluminium lighting truss is suspended along the south wall with a continuous LED strip on the wall behind it.</li>
+      <li>The north long wall is exposed brick with two large steel framed windows with deep reveals and radiators below. A raised brick paving strip with a step runs along its base, and brick paving continues as a band across the entrance end.</li>
+      <li>The south long wall is polished plaster carrying two ventilation grilles, a fire action notice and a room thermostat.</li>
+      <li>The east end is a glazed screen with a door to the corridor. The west end is a glazed screen, temporarily papered over, to the kitchen space beyond.</li>
+      <li>The room was in fit out when photographed: assembly benches, racking, packing tables, saw bench and boxes are shown indicatively and will move.</li>
+    </ol>
+  </div>
+
+  <div class="roomhead">Room 5 · Robotics <span>384 × 1340 · H 305 at vault crown</span></div>
+
+  <div class="sheet">
+    <div class="sheet-inner"><svg id="rplan" viewBox="-125 -115 1620 760"></svg></div>
+    <div class="sheet-inner"><svg id="rrcp" viewBox="-70 -60 1480 560"></svg></div>
+    <div class="titleblock">
+      <div class="cell"><span>Sheet</span><b>A-12 &nbsp;Robotics Floor Plan + Reflected Ceiling Plan</b></div>
+      <div class="cell"><span>Project</span><b>Office room survey</b></div>
+      <div class="cell"><span>Date</span><b>10 Jul 2026</b></div>
+      <div class="cell"><span>Drawn</span><b>Netholabs</b></div>
+      <div class="cell"><span>Scale</span><b>Dimensions govern</b></div>
+    </div>
+  </div>
+
+  <div class="sheet">
+    <div class="sheet-inner"><svg id="relevS" viewBox="-80 -60 1500 520"></svg></div>
+    <div class="sheet-inner"><svg id="relevT" viewBox="-80 -60 1500 520"></svg></div>
+    <div class="titleblock">
+      <div class="cell"><span>Sheet</span><b>A-13 &nbsp;Robotics Long Elevations</b></div>
+      <div class="cell"><span>Project</span><b>Office room survey</b></div>
+      <div class="cell"><span>Date</span><b>10 Jul 2026</b></div>
+      <div class="cell"><span>Drawn</span><b>Netholabs</b></div>
+      <div class="cell"><span>Key</span><b>Markers S&ndash;V + section D&ndash;D on plan</b></div>
+    </div>
+  </div>
+
+  <div class="sheet">
+    <div class="sheet-inner">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:26px 30px;min-width:720px">
+        <svg id="rsect" viewBox="-84 -80 552 505"></svg>
+        <svg id="relevU" viewBox="-84 -80 552 505"></svg>
+        <svg id="relevV" viewBox="-84 -80 552 505"></svg>
+      </div>
+    </div>
+    <div class="titleblock">
+      <div class="cell"><span>Sheet</span><b>A-14 &nbsp;Robotics Section + End Elevations</b></div>
+      <div class="cell"><span>Project</span><b>Office room survey</b></div>
+      <div class="cell"><span>Date</span><b>10 Jul 2026</b></div>
+      <div class="cell"><span>Drawn</span><b>Netholabs</b></div>
+      <div class="cell"><span>Key</span><b>Section D&ndash;D cut at x = 600, looking east</b></div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <h2>Survey notes · Room 5 (Robotics)</h2>
+    <ol>
+      <li>Plan dimensions 384 &times; 1340 cm and 305 cm height are as measured on site. The 305 is taken at the crown of the exposed brick barrel vault; the springing height of 240 cm at the long walls is estimated from the photographs.</li>
+      <li>The vault spans the 384 cm width with projecting brick arch bands and heat detectors on flexible conduit at the crown.</li>
+      <li>The south long wall is polished plaster carrying a row of suspended lightbox panels on cable hangers at staggered heights, two wall mounted AC units at high level, light switches and a radiator at the east end.</li>
+      <li>The north long wall is painted plaster with a wall mounted whiteboard, a TV swing arm and sockets; the desk run with workstation PCs sits against it, with cubby shelving units beyond.</li>
+      <li>The west end is an external steel glazed screen with a door and windows. The east end is brick paved with the 3D printer stands, cabinet with flight case, speaker shelf and TV stand grouped there, and an assumed door to the corridor at its north corner. Floor is screed with brick paving over the east zone.</li>
+      <li>The humanoid robot on its mobile gantry, the mobile whiteboard and all loose furniture are shown in photographed positions and are indicative only.</li>
+    </ol>
+  </div>
+
+  <div id="camstudy" class="roomhead">Camera Coverage Study <span>first pass · data collection hub</span></div>
+
+  <div class="sheet">
+    <div style="display:flex;gap:26px;flex-wrap:wrap;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);margin-bottom:10px">
+      <span><span style="display:inline-block;width:11px;height:11px;background:var(--cam1);opacity:.55;margin-right:6px"></span><span style="display:inline-block;width:11px;height:11px;background:var(--cam2);opacity:.55;margin-right:6px"></span><span style="display:inline-block;width:11px;height:11px;background:var(--cam3);opacity:.55;margin-right:6px"></span><span style="display:inline-block;width:11px;height:11px;background:var(--cam4);opacity:.55;margin-right:6px"></span>EACH CAMERA'S COVERAGE TINTED IN ITS OWN COLOUR, CODE LABELLED AT THE LENS</span>
+      <span>OVERLAPS READ DARKER · UNTINTED FLOOR = NOT COVERED</span>
+      <span>USB ~112° 0.8&ndash;2.8 M · HQ 6MM 55° 2.5&ndash;6.5 M · HQ 16MM 22° 6.5&ndash;14 M</span>
+      <span>DASHED LINES = CAPTURE CELL BOUNDARIES · PLANS NOT TO COMMON SCALE</span>
+      <span>LIVE: THESE PLANS FOLLOW THE LATEST 3D WALKTHROUGH LAYOUT SAVED IN THIS BROWSER</span>
+    </div>
+    <div class="sheet-inner">
+      <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:26px 30px;min-width:720px;align-items:end">
+        <svg id="camoff" viewBox="-15 -30 390 405"></svg>
+        <svg id="camlab" viewBox="-15 -30 590 355"></svg>
+      </div>
+    </div>
+    <div class="sheet-inner"><svg id="camcave" viewBox="-15 -30 950 545"></svg></div>
+    <div class="sheet-inner"><svg id="cameng" viewBox="-15 -30 1135 610"></svg></div>
+    <div class="sheet-inner"><svg id="camrob" viewBox="-15 -30 1375 500"></svg></div>
+    <div class="titleblock">
+      <div class="cell"><span>Sheet</span><b>A-15 &nbsp;Camera Coverage Plans</b></div>
+      <div class="cell"><span>Project</span><b>Data collection hub</b></div>
+      <div class="cell"><span>Date</span><b>10 Jul 2026</b></div>
+      <div class="cell"><span>Drawn</span><b>Netholabs</b></div>
+      <div class="cell"><span>Status</span><b>For discussion</b></div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <h2>Camera study notes</h2>
+    <ol>
+      <li>Optics: Arducam USB (OV9782, 1280 &times; 800 colour global shutter, 120 fps MJPG, UVC, external trigger capable) with the 130° diagonal M12 lens: approx. 112° &times; 78° effective (wide angle distortion reduces the rectilinear figure), resolving ~4.3 px/cm at 1 m. Pi HQ (IMX477, 4056 &times; 3040): with 6 mm lens approx. 55° &times; 43°, 39 px/cm at 1 m; with 16 mm lens approx. 22° &times; 17°, 103 px/cm at 1 m.</li>
+      <li>Working ranges used for the wedges: USB 0.8&ndash;2.8 m (below ~1.5 px/cm beyond that), HQ 6 mm 2.5&ndash;6.5 m (&ge; 6 px/cm), HQ 16 mm 6.5&ndash;14 m. The three ranges tile, so cells hand over cleanly.</li>
+      <li>Larger rooms are split into capture cells (dashed): one HQ 6 mm per ~5 &times; 4.5 m cell, USB units over close fast work (desks, rig tables, bench train). The 16 mm is only proposed in the robotics room, shooting the full 13.4 m length from the east end to avoid backlight from the west window.</li>
+      <li>Mounting: 230&ndash;270 above floor, tilted down 15&ndash;25°. Wedges are drawn in plan at mount height; floor coverage starts roughly 1 m out from the wall at these tilts. Aim for 15&ndash;20% overlap between neighbouring cells.</li>
+      <li>The USB units are colour global shutter at 120 fps: use them where motion is fastest and closest. The HQ units are rolling shutter: prefer them for wider, calmer context views.</li>
+      <li>Camera count this pass: 5 &times; USB (C1, C2, C5, C8, C12), 10 &times; HQ 6 mm (C3, C4, C6, C7, C9&ndash;C11, C13&ndash;C15), 1 &times; HQ 16 mm (C16). Positions are for taping out and testing, not final.</li>
+    </ol>
+  </div>
+</div>
+
+<script>(function(){
+const NS='http://www.w3.org/2000/svg';
+function E(tag,attrs,parent){
+  const e=document.createElementNS(NS,tag);
+  for(const k in attrs)e.setAttribute(k,attrs[k]);
+  parent.appendChild(e);return e;
+}
+function L(p,x1,y1,x2,y2,cls){return E('line',{x1,y1,x2,y2,class:cls},p);}
+function R(p,x,y,w,h,cls,extra){const a={x,y,width:w,height:h,class:cls};if(extra)Object.assign(a,extra);return E('rect',a,p);}
+function T(p,x,y,str,cls,anchor){
+  const t=E('text',{x,y,class:cls,'text-anchor':anchor||'middle'},p);
+  t.textContent=str;return t;
+}
+function tick(p,x,y){L(p,x-4,y+4,x+4,y-4,'dimln');}
+function dimH(p,x1,x2,y,label,txtAbove=true){
+  L(p,x1,y,x2,y,'dimln');tick(p,x1,y);tick(p,x2,y);
+  T(p,(x1+x2)/2,txtAbove?y-5:y+13,label,'dimtx');
+}
+function dimV(p,y1,y2,x,label,txtLeft=true){
+  L(p,x,y1,x,y2,'dimln');tick(p,x,y1);tick(p,x,y2);
+  const t=T(p,txtLeft?x-6:x+6,(y1+y2)/2,label,'dimtx',txtLeft?'end':'start');
+  t.setAttribute('transform',`rotate(-90 ${txtLeft?x-6:x+6} ${(y1+y2)/2})`);
+  t.setAttribute('text-anchor','middle');
+  t.setAttribute('y',(y1+y2)/2+(txtLeft?-6:10));
+  t.setAttribute('x',txtLeft?x-6:x+6);
+}
+function ext(p,x1,y1,x2,y2){L(p,x1,y1,x2,y2,'thin');}
+function marker(p,x,y,letter){
+  E('circle',{cx:x,cy:y,r:11,class:'mk'},p);
+  T(p,x,y+4.5,letter,'mktx');
+}
+function defsHatch(svg,id,spacing,cls,angle){
+  let defs=svg.querySelector('defs')||E('defs',{},svg);
+  const pat=E('pattern',{id,width:spacing,height:spacing,patternUnits:'userSpaceOnUse',patternTransform:`rotate(${angle})`},defs);
+  E('line',{x1:0,y1:0,x2:0,y2:spacing,class:cls},pat);
+  return `url(#${id})`;
+}
+
+/* ---------------- FLOOR PLAN ---------------- */
+(function(){
+  const s=document.getElementById('plan');
+  const W=354,D=315,tB=22,tP=12;
+  const brick=defsHatch(s,'hbrick',5,'thin',45);
+  const stud=defsHatch(s,'hstud',7,'thin',-45);
+
+  // walls (poché)
+  function wallRect(x,y,w,h,fill){
+    R(s,x,y,w,h,'',{fill});
+    R(s,x,y,w,h,'w1',{fill:'none'});
+  }
+  wallRect(-tP,-tB,W+2*tP,tB,brick);            // north brick
+  wallRect(0,0,40,40,brick);                    // brick pier NW
+  wallRect(-tP,0,tP,D+tP,stud);                 // west grey
+  wallRect(W,0,tP,D+tP,stud);                   // east white
+  // south with door opening x 30..200
+  wallRect(-tP,D,30+tP,tP,stud);
+  wallRect(200,D,W-200+tP,tP,stud);
+  // inner face outline emphasis
+  E('path',{d:`M0 ${D} L0 40 M40 40 L40 0 M0 40 L40 40 M0 0 H${W} V${D} H200 M30 ${D} H0`,class:'w',fill:'none'},s);
+
+  // door leaves + swings (open into room)
+  L(s,30,D,30,D-85,'w1'); L(s,200,D,200,D-85,'w1');
+  E('path',{d:`M115 ${D} A85 85 0 0 0 30 ${D-85}`,class:'thin'},s);
+  E('path',{d:`M115 ${D} A85 85 0 0 1 200 ${D-85}`,class:'thin'},s);
+
+  // furniture
+  R(s,0,60,80,160,'furn');                       // desk
+  T(s,40,145,'DESK','lbl');
+  T(s,40,156,'160×80','lbl');
+  R(s,20,100,14,44,'furn');                      // monitor on desk
+  E('circle',{cx:112,cy:140,r:26,class:'dash'},s); // task chair
+  T(s,112,178,'TASK CHAIR','lbl');
+  R(s,230,14,70,42,'furn');                      // TV stand base
+  L(s,210,36,320,36,'w1');                       // TV screen line
+  T(s,266,72,'TV ON MOBILE STAND','lbl');
+  R(s,240,2,90,9,'dash');                        // radiator
+  T(s,286,-32,'RADIATOR','lbl');
+  ext(s,286,-28,286,4);
+  L(s,70,1.5,220,1.5,'w');                       // whiteboard on wall face
+  T(s,145,14,'WHITEBOARD 150 W','lbl');
+  E('circle',{cx:22,cy:52,r:9,class:'furn'},s);  // wall fan on pier
+  T(s,64,52,'FAN ON PIER','lbl','start');
+  ext(s,32,52,60,52);
+  R(s,246,64,56,40,'dash');                      // boxes
+  T(s,274,88,'BOXES','lbl');
+  E('circle',{cx:322,cy:34,r:16,class:'furn'},s); // stool
+  T(s,322,10,'STOOL','lbl');
+  R(s,296,222,50,52,'furn');                     // armchair
+  T(s,321,290,'ARMCHAIR','lbl');
+  R(s,52,244,42,40,'dash');                      // stacking chair
+  T(s,73,300,'CHAIR','lbl');
+  E('circle',{cx:14,cy:236,r:8,class:'furn'},s); // fire extinguisher
+  T(s,14,222,'FE','lbl');
+  // ceiling detectors
+  E('circle',{cx:96,cy:76,r:6,class:'dash'},s);
+  E('circle',{cx:236,cy:196,r:6,class:'dash'},s);
+  T(s,96,64,'SD (CLG)','lbl');
+  T(s,236,184,'SD (CLG)','lbl');
+
+  // dimensions
+  ext(s,0,-tB-4,0,-58); ext(s,W,-tB-4,W,-58);
+  dimH(s,0,W,-52,'354');
+  ext(s,-tP-4,0,-58,0); ext(s,-tP-4,D,-58,D);
+  dimV(s,0,D,-52,'315');
+  ext(s,0,D+tP+4,0,D+46); ext(s,30,D+tP+4,30,D+46); ext(s,200,D+tP+4,200,D+46); ext(s,W,D+tP+4,W,D+46);
+  dimH(s,0,30,D+40,'30',false); dimH(s,30,200,D+40,'170 CLR OPG',false); dimH(s,200,W,D+40,'154',false);
+  // pier dims
+  dimH(s,0,40,-32,'40');
+  ext(s,40,-4,40,-36);
+
+  // elevation markers
+  marker(s,W/2-40,-84,'A');
+  marker(s,W+62,D/2,'B');
+  marker(s,W/2+62,D+82,'C');
+  marker(s,-72,D/2+80,'D');
+
+  T(s,W/2,-84,'','lbl');
+  T(s,177,376,'FLOOR PLAN','lbl2');
+  // scale bar
+  const sb=E('g',{transform:'translate(-80 388)'},s);
+  L(sb,0,0,100,0,'w1');
+  for(const x of [0,25,50,100]) L(sb,x,-4,x,4,'w1');
+  R(sb,0,-3,25,3,'',{fill:'var(--ink)'});
+  R(sb,50,-3,50,3,'',{fill:'var(--ink)'});
+  T(sb,0,16,'0','dimtx'); T(sb,50,16,'50','dimtx'); T(sb,100,16,'100 CM','dimtx');
+})();
+
+/* ---------------- ELEVATION HELPERS ---------------- */
+function elevFrame(s,len,title,sub){
+  // floor + ceiling + walls box
+  R(s,0,0,len,280,'w1',{fill:'none'});
+  L(s,-14,280,len+14,280,'w');           // floor line heavy
+  ext(s,-20,0,-46,0); ext(s,-20,280,-46,280);
+  dimV(s,0,280,-40,'280');
+  ext(s,0,286,0,314); ext(s,len,286,len,314);
+  dimH(s,0,len,308,String(len),false);
+  T(s,len/2,366,title,'lbl2');
+  T(s,len/2,381,sub,'lbl');
+}
+const Y=h=>280-h;  // height above floor -> svg y
+
+/* ---- ELEVATION A : NORTH / BRICK ---- */
+(function(){
+  const s=document.getElementById('elevA');
+  const brick=defsHatch(s,'ebrick',9,'thin',0);
+  R(s,0,0,354,280,'',{fill:brick,opacity:.5});
+  elevFrame(s,354,'ELEVATION A','EXPOSED BRICK WALL');
+  // whiteboard 150x100, sill 120
+  R(s,70,Y(220),150,100,'w1',{fill:'var(--sheet)'});
+  T(s,145,Y(220)-6,'WHITEBOARD','lbl');
+  // radiator 90 x 60
+  R(s,240,Y(60),90,60,'furn',{fill:'var(--sheet)'});
+  for(let x=248;x<330;x+=8)L(s,x,Y(56),x,Y(6),'thin');
+  T(s,285,Y(66),'RADIATOR','lbl');
+  // TV on stand (freestanding, dashed)
+  R(s,210,Y(160),110,62,'dash');
+  L(s,265,Y(98),265,Y(12),'dash');
+  R(s,238,Y(12),54,10,'dash');
+  T(s,265,Y(168),'TV / MOBILE STAND','lbl');
+  // conduit + detector + fan on pier zone
+  L(s,20,Y(240),20,Y(0),'furn');
+  L(s,20,Y(240),120,Y(240),'furn');
+  E('circle',{cx:20,cy:Y(248),r:7,class:'furn'},s);
+  T(s,52,Y(256),'HEAT DET. ON CONDUIT','lbl','start');
+  E('circle',{cx:20,cy:Y(170),r:20,class:'furn'},s);
+  E('circle',{cx:20,cy:Y(170),r:13,class:'thin'},s);
+  T(s,48,Y(170),'WALL FAN','lbl','start');
+})();
+
+/* ---- ELEVATION C : SOUTH / GLAZED PARTITION (viewed: east at left) ---- */
+(function(){
+  const s=document.getElementById('elevC');
+  elevFrame(s,354,'ELEVATION C','GLAZED STEEL PARTITION + DOUBLE DOORS');
+  const dx1=154,dx2=324; // opening, mirrored from plan
+  const head=210, trans=210;
+  // frame verticals
+  for(const x of [0,dx1,(dx1+dx2)/2,dx2,354]) L(s,x,0,x,280,'w1');
+  // transom across full width
+  L(s,0,Y(trans),354,Y(trans),'w1');
+  // glazing above transom
+  for(const [a,b] of [[0,dx1],[dx1,(dx1+dx2)/2],[(dx1+dx2)/2,dx2],[dx2,354]]){
+    L(s,a+6,Y(280)+6,b-6,Y(trans)-6,'glassln');
+    L(s,a+6,Y(trans)-6,b-6,Y(280)+6,'glassln');
+  }
+  // side panels: solid lower, glass mid
+  for(const [a,b] of [[0,dx1],[dx2,354]]){
+    R(s,a,Y(100),b-a,100,'',{fill:'var(--hatch)',opacity:.45});
+    L(s,a,Y(100),b,Y(100),'w1');
+    L(s,a+6,Y(trans)-6,b-6,Y(100)+6,'glassln');
+    L(s,a+6,Y(100)+6,b-6,Y(trans)-6,'glassln');
+  }
+  // door leaves
+  for(const [a,b] of [[dx1,(dx1+dx2)/2],[(dx1+dx2)/2,dx2]]){
+    R(s,a+3,Y(head),b-a-6,head,'furn');
+    R(s,a+3,Y(100),b-a-6,100,'',{fill:'var(--hatch)',opacity:.45});
+    L(s,a+3,Y(100),b-3,Y(100),'w1');
+    L(s,a+9,Y(head)-6,b-9,Y(100)+6,'glassln');
+    L(s,a+9,Y(100)+6,b-9,Y(head)-6,'glassln');
+  }
+  // handles at meeting stiles, h 105
+  L(s,(dx1+dx2)/2-8,Y(120),(dx1+dx2)/2-8,Y(90),'w');
+  L(s,(dx1+dx2)/2+8,Y(120),(dx1+dx2)/2+8,Y(90),'w');
+  // dims
+  ext(s,dx1,Y(0)+6,dx1,Y(0)+40); ext(s,dx2,Y(0)+6,dx2,Y(0)+40);
+  dimH(s,dx1,dx2,Y(0)+34,'170',false);
+  ext(s,dx2+6,Y(head),dx2+34,Y(head));
+  dimV(s,Y(head),280,dx2+40,'210',false);
+})();
+
+/* ---- ELEVATION D : WEST / GREY (viewed: south at left) ---- */
+(function(){
+  const s=document.getElementById('elevD');
+  elevFrame(s,315,'ELEVATION D','PAINTED PARTITION WALL');
+  const px=y=>315-y; // plan y -> elevation x
+  // TV bracket plate 110 x 26, underside 160
+  const bx=px(200);
+  R(s,bx,Y(186),110,26,'furn',{fill:'var(--sheet)'});
+  for(let x=bx+8;x<bx+106;x+=10)R(s,x,Y(181),4,16,'thin');
+  T(s,bx+55,Y(192),'TV BRACKET PLATE (UNUSED)','lbl');
+  // twin socket below bracket
+  R(s,bx+78,Y(140),16,10,'furn');
+  T(s,bx+118,Y(142),'2G SOCKET','lbl','start');
+  // light switch near door end (south = left)
+  R(s,42,Y(126),10,10,'furn');
+  T(s,42,Y(134),'SWITCH','lbl');
+  // desk + monitor dashed (freestanding against wall)
+  const d1=px(220),d2=px(60);
+  R(s,d1,Y(74),d2-d1,74,'dash');
+  R(s,d1+52,Y(112),56,38,'dash');
+  T(s,(d1+d2)/2,Y(120),'DESK + MONITOR','lbl');
+  // bracket height dim
+  ext(s,bx-6,Y(160),bx-30,Y(160));
+  dimV(s,Y(160),280,bx-24,'160');
+})();
+
+/* ---- ELEVATION B : EAST / WHITE (viewed: north at left) ---- */
+(function(){
+  const s=document.getElementById('elevB');
+  elevFrame(s,315,'ELEVATION B','PAINTED WALL');
+  // skirting
+  L(s,0,Y(10),315,Y(10),'thin');
+  // stool near north end (left), dashed
+  R(s,18,Y(66),34,4,'dash');
+  L(s,24,Y(62),28,Y(0),'dash');L(s,46,Y(62),42,Y(0),'dash');
+  T(s,35,Y(76),'STOOL','lbl');
+  // armchair near south end (right)
+  R(s,224,Y(44),52,44,'dash');
+  R(s,230,Y(78),40,36,'dash');
+  T(s,250,Y(88),'ARMCHAIR','lbl');
+})();
+
+/* ================= ROOM 2 : CAVE ================= */
+/* plan: origin NW inner corner, x east 0..915, y south 0..460 */
+
+/* ---- CAVE FLOOR PLAN ---- */
+(function(){
+  const s=document.getElementById('cplan');
+  const W=915,D=460,tB=34,tE=25,tG=12;
+  const brick=defsHatch(s,'cbrick',5,'thin',45);
+  const stud=defsHatch(s,'cstud',7,'thin',-45);
+  function wallRect(x,y,w,h,fill){R(s,x,y,w,h,'',{fill});R(s,x,y,w,h,'w1',{fill:'none'});}
+  // long brick walls, running past the west partition (break lines at x=-40)
+  wallRect(-40,-tB,W+40,tB,brick);
+  wallRect(-40,D,W+40,tB,brick);
+  // east wall with door opening y 340..440
+  wallRect(W,0,tE,340,stud);
+  wallRect(W,440,tE,20,stud);
+  // west green partition y 100..380, open both sides
+  wallRect(-tG,100,tG,280,stud);
+  // brick piers (positions approximate)
+  for(const px of [210,440,670]) wallRect(px,0,40,12,brick);
+  for(const px of [90,440,560]) wallRect(px,448,40,12,brick);
+  // inner face outline
+  E('path',{d:`M-40 0 H${W} M-40 ${D} H${W} M${W} 0 V340 M${W} 440 V${D} M0 100 V380`,class:'w',fill:'none'},s);
+  // break marks at survey limit, west
+  for(const yy of [-tB-6,D+tB+6]){L(s,-40,yy,-32,yy-0,'thin');}
+  L(s,-40,-tB,-48,6,'w1');L(s,-48,6,-40,0,'w1');
+  L(s,-40,D,-48,D+tB+6,'w1');L(s,-48,D+tB+6,-40,D+tB,'w1');
+  const tb=T(s,-58,230,'ENTRANCE STAIR / WINDOW BAY BEYOND','lbl');
+  tb.setAttribute('transform','rotate(-90 -58 230)');
+  // door leaf + swing (steel door, opens into room)
+  L(s,W,440,W-100,440,'w1');
+  E('path',{d:`M${W} 340 A100 100 0 0 0 ${W-100} 440`,class:'thin'},s);
+  // openings labels at west
+  T(s,-6,55,'OPG','lbl','end');T(s,-6,66,'~100','lbl','end');
+  T(s,-6,415,'OPG','lbl','end');T(s,-6,426,'~80','lbl','end');
+  // vent grille marker on green wall
+  L(s,-10,200,-2,200,'w1');L(s,-10,290,-2,290,'w1');
+  T(s,-20,250,'VENT','lbl','end');
+
+  // ---- furniture ----
+  // racking on north wall
+  R(s,60,0,90,45,'furn');T(s,105,60,'RACKING','lbl');T(s,105,71,'CAMERA RIGS','lbl');
+  R(s,270,0,90,45,'furn');T(s,315,60,'RACKING','lbl');T(s,315,71,'CAMERA RIGS','lbl');
+  // plinths + monitor stand
+  R(s,170,110,40,40,'furn');T(s,190,166,'PLINTH +','lbl');T(s,190,177,'DISPLAY CASE','lbl');
+  R(s,70,200,35,35,'furn');T(s,88,252,'PLINTH','lbl');
+  E('circle',{cx:75,cy:305,r:13,class:'furn'},s);T(s,75,336,'MONITOR','lbl');T(s,75,347,'ON STAND','lbl');
+  // rig tables (black cloth)
+  R(s,500,90,180,75,'furn');T(s,590,133,'RIG TABLE','lbl');
+  R(s,700,110,160,75,'furn');T(s,780,153,'RIG TABLE','lbl');
+  // round table + chairs
+  E('circle',{cx:470,cy:230,r:45,class:'furn'},s);T(s,470,233,'TABLE ⌀90','lbl');
+  R(s,420,285,36,36,'dash');R(s,520,170,36,36,'dash');
+  // console table + acoustic booth on east wall
+  R(s,870,20,45,200,'furn');T(s,860,120,'CONSOLE TABLE','lbl','end');
+  R(s,835,230,80,120,'furn');T(s,825,292,'ACOUSTIC BOOTH','lbl','end');
+  // desks on south wall
+  R(s,140,390,160,70,'furn');T(s,220,428,'DESK 1','lbl');
+  E('circle',{cx:222,cy:352,r:26,class:'dash'},s);
+  R(s,110,430,16,16,'furn');T(s,105,415,'MICROSCOPE','lbl');
+  R(s,320,435,160,12,'furn');T(s,400,425,'MOBILE WHITEBOARD','lbl');
+  E('circle',{cx:505,cy:448,r:8,class:'furn'},s);T(s,505,432,'FE','lbl');
+  R(s,660,385,180,75,'furn');T(s,750,425,'DESK 2','lbl');
+  E('circle',{cx:748,cy:348,r:26,class:'dash'},s);
+  R(s,842,428,22,26,'furn');T(s,872,466,'PC','lbl');
+
+  // section line A-A at x=460
+  E('line',{x1:460,y1:-72,x2:460,y2:532,class:'dimln','stroke-dasharray':'14 5 3 5'},s);
+  marker(s,460,-90,'A');marker(s,460,550,'A');
+
+  // dimensions
+  ext(s,0,-tB-4,0,-64);ext(s,W,-tB-4,W,-64);
+  dimH(s,0,W,-58,'915');
+  ext(s,-tG-4,100,-86,100);ext(s,-tG-4,380,-86,380);
+  ext(s,-4,0,-86,0);ext(s,-4,D,-86,D);
+  dimV(s,0,D,-80,'460');
+  ext(s,W+tE+4,340,W+tE+56,340);ext(s,W+tE+4,440,W+tE+56,440);
+  ext(s,W+tE+4,0,W+tE+56,0);ext(s,W+tE+4,D,W+tE+56,D);
+  dimV(s,0,340,W+tE+50,'340',false);
+  dimV(s,340,440,W+tE+50,'100',false);
+  dimV(s,440,D,W+tE+50,'20',false);
+  // elevation markers
+  marker(s,680,-90,'E');marker(s,240,550,'F');
+  marker(s,1030,150,'G');marker(s,-100,320,'H');
+  T(s,457,600,'FLOOR PLAN · CAVE','lbl2');
+  const sb=E('g',{transform:'translate(-110 618)'},s);
+  L(sb,0,0,200,0,'w1');
+  for(const x of [0,50,100,200])L(sb,x,-4,x,4,'w1');
+  R(sb,0,-3,50,3,'',{fill:'var(--ink)'});R(sb,100,-3,100,3,'',{fill:'var(--ink)'});
+  T(sb,0,16,'0','dimtx');T(sb,100,16,'100','dimtx');T(sb,200,16,'200 CM','dimtx');
+})();
+
+/* ---- CAVE REFLECTED CEILING PLAN ---- */
+(function(){
+  const s=document.getElementById('crcp');
+  const W=915,D=460;
+  R(s,0,0,W,D,'w1',{fill:'none'});
+  // LED cove along both long walls
+  L(s,0,12,W,12,'dash');L(s,0,D-12,W,D-12,'dash');
+  T(s,120,32,'LED COVE ON STEEL EDGE CHANNEL','lbl','start');
+  T(s,120,D-22,'LED COVE ON STEEL EDGE CHANNEL','lbl','start');
+  // steel arch ribs
+  for(const x of [150,350,550,750]){L(s,x,0,x,D,'w');}
+  T(s,150,-14,'STEEL ARCH RIBS OVER (SPAN 460)','lbl','start');
+  // longitudinal spine
+  L(s,150,230,750,230,'w1');
+  // suspended luminaires
+  for(const [a,b] of [[250,485],[495,730]]){
+    R(s,a,215,b-a,30,'',{fill:'var(--glass)',opacity:.35});
+    R(s,a,215,b-a,30,'w1',{fill:'none'});
+  }
+  T(s,490,268,'2 NO. SUSPENDED LINEAR LUMINAIRES','lbl');
+  // vault crown line
+  E('line',{x1:0,y1:230,x2:W,y2:230,class:'thin','stroke-dasharray':'12 6'},s);
+  T(s,880,222,'VAULT CROWN','lbl','end');
+  // detector
+  E('circle',{cx:140,cy:150,r:8,class:'dash'},s);T(s,140,132,'SD','lbl');
+  T(s,457,522,'REFLECTED CEILING PLAN · CAVE','lbl2');
+})();
+
+/* ---- cave elevation frames ---- */
+const YV=h=>290-h;   // section / end walls: crown datum
+const YL=h=>235-h;   // long walls: springing datum
+function longFrame(s,title){
+  R(s,0,0,915,235,'w1',{fill:'none'});
+  L(s,-14,235,929,235,'w');
+  T(s,457,-12,'VAULT SPRINGING LINE · CROWN AT 290 ABOVE FFL','lbl');
+  ext(s,-20,0,-46,0);ext(s,-20,235,-46,235);
+  dimV(s,0,235,-40,'235');
+  ext(s,0,241,0,269);ext(s,915,241,915,269);
+  dimH(s,0,915,263,'915',false);
+  T(s,457,330,title,'lbl2');
+  T(s,457,345,'EXPOSED BRICK · LED COVE AT SPRINGING','lbl');
+}
+function endFrame(s,title,sub){
+  E('path',{d:'M0 290 L0 55 A508 508 0 0 1 460 55 L460 290',class:'w1',fill:'none'},s);
+  L(s,-14,290,474,290,'w');
+  ext(s,-20,290,-46,290);ext(s,220,0,-46,0);
+  dimV(s,0,290,-40,'290');
+  ext(s,464,55,492,55);ext(s,464,290,492,290);
+  dimV(s,55,290,486,'235',false);
+  ext(s,0,296,0,324);ext(s,460,296,460,324);
+  dimH(s,0,460,318,'460',false);
+  T(s,230,366,title,'lbl2');
+  T(s,230,381,sub,'lbl');
+}
+
+/* ---- ELEVATION E : NORTH LONG WALL (west at left) ---- */
+(function(){
+  const s=document.getElementById('celevE');
+  const brick=defsHatch(s,'cebrick',9,'thin',0);
+  R(s,0,0,915,235,'',{fill:brick,opacity:.4});
+  longFrame(s,'ELEVATION E · NORTH WALL');
+  // piers
+  for(const px of [210,440,670]){L(s,px,0,px,235,'thin');L(s,px+40,0,px+40,235,'thin');}
+  // racking dashed with shelf lines
+  for(const rx of [60,270]){
+    R(s,rx,YL(185),90,185,'dash');
+    for(let h=40;h<185;h+=36)L(s,rx,YL(h),rx+90,YL(h),'thin');
+  }
+  T(s,105,YL(196),'RACKING','lbl');T(s,315,YL(196),'RACKING','lbl');
+  // conduit + clock
+  L(s,40,0,40,235,'furn');
+  T(s,58,YL(120),'CONDUIT','lbl','start');
+  E('circle',{cx:850,cy:YL(210),r:12,class:'furn'},s);
+  T(s,850,YL(228),'CLOCK','lbl');
+})();
+
+/* ---- ELEVATION F : SOUTH LONG WALL (east at left) ---- */
+(function(){
+  const s=document.getElementById('celevF');
+  const brick=defsHatch(s,'cfbrick',9,'thin',0);
+  R(s,0,0,915,235,'',{fill:brick,opacity:.4});
+  longFrame(s,'ELEVATION F · SOUTH WALL');
+  const px=x=>915-x; // plan x -> elevation x
+  for(const p of [90,440,560]){L(s,px(p+40),0,px(p+40),235,'thin');L(s,px(p),0,px(p),235,'thin');}
+  // desk 1 (dual monitors) plan x 140..300
+  R(s,px(300),YL(74),160,74,'dash');
+  R(s,px(280),YL(115),50,38,'dash');R(s,px(220),YL(115),50,38,'dash');
+  T(s,px(220),YL(84),'DESK 1 + 2 MONITORS','lbl');
+  // whiteboard plan 320..480
+  R(s,px(480),YL(190),160,120,'dash');
+  T(s,px(400),YL(200),'MOBILE WHITEBOARD','lbl');
+  // FE plan 500
+  R(s,px(505)-6,YL(55),12,55,'dash');T(s,px(505),YL(66),'FE','lbl');
+  // desk 2 plan 660..840
+  R(s,px(840),YL(75),180,75,'dash');
+  R(s,px(770),YL(118),52,40,'dash');
+  T(s,px(750),YL(86),'DESK 2 + MONITOR','lbl');
+})();
+
+/* ---- SECTION A-A (cut at x = 460, looking east) ---- */
+(function(){
+  const s=document.getElementById('csect');
+  const brick=defsHatch(s,'csbrick',5,'thin',45);
+  // walls in section (poché)
+  R(s,-34,55,34,235,'',{fill:brick});R(s,-34,55,34,235,'w1',{fill:'none'});
+  R(s,460,55,34,235,'',{fill:brick});R(s,460,55,34,235,'w1',{fill:'none'});
+  // vault soffit + steel rib
+  E('path',{d:'M0 55 A508 508 0 0 1 460 55',class:'w',fill:'none'},s);
+  E('path',{d:'M14 62 A492 492 0 0 1 446 62',class:'w1',fill:'none'},s);
+  T(s,372,26,'PLASTERED BARREL VAULT','lbl');
+  T(s,96,80,'STEEL ARCH RIB','lbl');
+  // edge channels + LED cove
+  R(s,0,49,16,12,'',{fill:'var(--ink)'});R(s,444,49,16,12,'',{fill:'var(--ink)'});
+  T(s,26,100,'LED COVE','lbl','start');
+  L(s,24,94,12,64,'thin');
+  // suspended luminaire on centreline
+  L(s,230,13,230,32,'furn');
+  R(s,212,32,36,10,'furn');
+  L(s,214,44,246,44,'glassln');
+  T(s,230,62,'LUMINAIRE','lbl');
+  // floor + ground hatch
+  L(s,-48,290,508,290,'w');
+  for(let x=-44;x<508;x+=14)L(s,x,290,x-8,298,'thin');
+  // dims
+  ext(s,224,0,-46,0);ext(s,-40,290,-46,290);
+  dimV(s,0,290,-40,'290');
+  ext(s,494,55,522,55);ext(s,494,290,522,290);
+  dimV(s,55,290,516,'235',false);
+  ext(s,0,296,0,324);ext(s,460,296,460,324);
+  dimH(s,0,460,318,'460',false);
+  T(s,230,366,'SECTION A–A','lbl2');
+  T(s,230,381,'LOOKING EAST','lbl');
+})();
+
+/* ---- ELEVATION H : WEST END / GREEN PARTITION (south at left) ---- */
+(function(){
+  const s=document.getElementById('celevH');
+  endFrame(s,'ELEVATION H · WEST END','GREEN PARTITION · OPEN BOTH SIDES');
+  const px=y=>460-y; // plan y -> elevation x
+  // green wall panel y 100..380 -> x 80..360, up to vault soffit
+  E('path',{d:'M80 290 L80 23 A508 508 0 0 1 360 23 L360 290 Z',fill:'var(--hatch)',opacity:'.35'},s);
+  L(s,80,23,80,290,'w1');L(s,360,23,360,290,'w1');
+  // vent grille
+  R(s,200,YV(240),90,28,'furn');
+  for(let x=206;x<286;x+=8)L(s,x,YV(236),x,YV(212),'thin');
+  T(s,245,YV(248),'VENT GRILLE','lbl');
+  // openings
+  T(s,40,YV(120),'OPG TO','lbl');T(s,40,YV(108),'ENTRANCE STAIR','lbl');
+  T(s,410,YV(120),'OPG TO','lbl');T(s,410,YV(108),'WINDOW BAY','lbl');
+  // white plinth + monitor stand in front (dashed)
+  R(s,px(235),YV(110),35,110,'dash');
+  T(s,px(218),YV(120),'PLINTH','lbl');
+  L(s,px(305),290,px(305),YV(130),'dash');
+  R(s,px(325),YV(160),40,45,'dash');
+  T(s,px(305),YV(172),'MONITOR','lbl');
+})();
+
+/* ---- ELEVATION G : EAST END / WHITE WALL (north at left) ---- */
+(function(){
+  const s=document.getElementById('celevG');
+  endFrame(s,'ELEVATION G · EAST END','PLASTERED WALL · STEEL DOOR');
+  // door opening plan y 340..440 -> x 340..440
+  R(s,340,YV(210),100,210,'w1',{fill:'var(--sheet)'});
+  R(s,352,YV(190),76,50,'glassln',{fill:'none'});
+  L(s,352,YV(105),366,YV(105),'w');
+  T(s,390,YV(222),'STEEL DOOR 100 × 210','lbl');
+  // acoustic booth y 230..350 -> x 230..350 (dashed, freestanding)
+  R(s,230,YV(200),120,200,'dash');
+  T(s,290,YV(210),'ACOUSTIC BOOTH','lbl');
+  // console table y 20..220 -> x 20..220
+  R(s,20,YV(75),200,75,'dash');
+  R(s,40,YV(125),160,50,'dash');
+  T(s,120,YV(135),'CONSOLE TABLE + ACRYLIC SCREENS','lbl');
+})();
+
+/* ================= ROOM 3 : LAB (resurveyed) ================= */
+/* plan: origin NW inner corner, x east 0..554, y south 0..269.
+   North = exposed brick with blind arches + raised plinth; south and
+   east = painted plaster; west end = painted mural wall with glazed
+   screen + door at its south corner. Flat plaster ceiling at 290
+   with two suspended LED panels. Floor timber throughout. */
+
+/* ---- LAB FLOOR PLAN ---- */
+(function(){
+  const s=document.getElementById('lplan');
+  const W=554,D=269,tB=34,tP=12;
+  const brick=defsHatch(s,'lbrick',5,'thin',45);
+  const stud=defsHatch(s,'lstud',7,'thin',-45);
+  function wallRect(x,y,w,h,fill){R(s,x,y,w,h,'',{fill});R(s,x,y,w,h,'w1',{fill:'none'});}
+  wallRect(-tP,-tB,W+2*tP,tB,brick);        // north brick
+  wallRect(-tP,D,W+2*tP,tP,stud);           // south
+  wallRect(W,0,tP,D,stud);                  // east
+  wallRect(-tP,0,tP,170,stud);              // west: mural wall y 0..170
+  // west glazed screen y 170..269, door y 175..265
+  L(s,0,170,0,D,'w1');L(s,-6,170,-6,D,'w1');L(s,-3,170,-3,D,'glassln');
+  L(s,0,265,90,265,'w1');
+  E('path',{d:'M0 175 A90 90 0 0 1 90 265',class:'thin'},s);
+  T(s,64,246,'DOOR','lbl');
+  // heavy inner faces on solid walls
+  E('path',{d:`M0 0 H${W} V${D} H0 M0 0 V170`,class:'w',fill:'none'},s);
+  // raised brick plinth + trench cover along north wall
+  R(s,0,0,W,14,'',{fill:'var(--hatch)',opacity:.4});
+  L(s,0,14,W,14,'w1');
+  L(s,0,32,W,32,'thin');
+  T(s,110,26,'RAISED BRICK PLINTH','lbl','start');
+  T(s,300,44,'CHEQUER PLATE TRENCH COVER + PIPEWORK','lbl','start');
+  // blind arch recesses (dashed, in wall above plinth)
+  R(s,40,-11,170,11,'dash');R(s,280,-11,170,11,'dash');
+  T(s,125,-18,'BLIND ARCH OVER','lbl');T(s,365,-18,'BLIND ARCH OVER','lbl');
+  // radiators, router, sockets, detector, wall fan
+  R(s,60,2,100,10,'dash');R(s,460,2,90,10,'dash');
+  T(s,160,8,'RAD','lbl','start');T(s,455,8,'RAD','lbl','end');
+  R(s,215,4,14,9,'furn');T(s,222,44,'ROUTER','lbl');
+  L(s,252,0,252,8,'w1');T(s,252,-18,'SKTS','lbl');
+  E('circle',{cx:300,cy:8,r:5,class:'furn'},s);T(s,300,-18,'HD','lbl');
+  E('circle',{cx:505,cy:20,r:9,class:'furn'},s);T(s,468,74,'WALL FAN','lbl','start');
+  // desk + projector + chairs
+  E('rect',{x:80,y:48,width:360,height:105,rx:52,class:'furn'},s);
+  T(s,260,106,'DESK','lbl');
+  R(s,350,70,20,22,'furn');T(s,392,84,'PROJECTOR','lbl','start');
+  for(const cx of [160,280,390])E('circle',{cx,cy:192,r:24,class:'dash'},s);
+  T(s,275,236,'CHAIRS','lbl');
+  T(s,120,255,'TIMBER FLOOR','lbl');
+  // south + east wall fittings
+  L(s,300,D,300,D-8,'w1');T(s,300,250,'2G','lbl');
+  L(s,40,D,40,D-8,'w1');T(s,40,250,'SW','lbl');
+  L(s,W,150,W-8,150,'w1');T(s,W-14,154,'2G','lbl','end');
+  // section line B-B at x=380
+  E('line',{x1:380,y1:-66,x2:380,y2:322,class:'dimln','stroke-dasharray':'14 5 3 5'},s);
+  marker(s,380,-84,'B');marker(s,380,340,'B');
+  // dimensions
+  ext(s,0,-tB-4,0,-64);ext(s,W,-tB-4,W,-64);
+  dimH(s,0,W,-58,'554');
+  ext(s,-tP-4,0,-58,0);ext(s,-tP-4,D,-58,D);
+  dimV(s,0,D,-52,'269');
+  ext(s,-16,170,-34,170);
+  dimV(s,0,170,-28,'170');
+  dimV(s,170,D,-28,'99');
+  // markers
+  marker(s,200,-84,'J');marker(s,200,340,'K');
+  marker(s,640,140,'G');marker(s,-85,80,'H');
+  T(s,277,395,'FLOOR PLAN · LAB','lbl2');
+  const sb=E('g',{transform:'translate(-90 420)'},s);
+  L(sb,0,0,100,0,'w1');
+  for(const x of [0,25,50,100])L(sb,x,-4,x,4,'w1');
+  R(sb,0,-3,25,3,'',{fill:'var(--ink)'});R(sb,50,-3,50,3,'',{fill:'var(--ink)'});
+  T(sb,0,16,'0','dimtx');T(sb,50,16,'50','dimtx');T(sb,100,16,'100 CM','dimtx');
+})();
+
+/* ---- LAB REFLECTED CEILING PLAN ---- */
+(function(){
+  const s=document.getElementById('lrcp');
+  const W=554,D=269;
+  R(s,0,0,W,D,'w1',{fill:'none'});
+  T(s,277,-14,'FLAT PLASTER CEILING · H 290','lbl');
+  // two suspended LED panels on drop rods
+  for(const a of [140,330]){
+    R(s,a,75,120,120,'',{fill:'var(--glass)',opacity:.3});
+    R(s,a,75,120,120,'w1',{fill:'none'});
+    for(const [dx,dy] of [[14,14],[106,14],[14,106],[106,106]])
+      E('circle',{cx:a+dx,cy:75+dy,r:2.5,class:'furn'},s);
+  }
+  T(s,295,145,'2 NO. SUSPENDED LED PANELS ~120×120','lbl','start');
+  E('circle',{cx:40,cy:60,r:7,class:'dash'},s);
+  T(s,40,42,'ROSE','lbl');
+  T(s,277,330,'REFLECTED CEILING PLAN · LAB','lbl2');
+})();
+
+/* ---- lab frames (flat ceiling at 290) ---- */
+function labFlatLong(s,title,sub){
+  R(s,0,0,554,290,'w1',{fill:'none'});
+  L(s,-14,290,568,290,'w');
+  ext(s,-20,0,-46,0);ext(s,-20,290,-46,290);
+  dimV(s,0,290,-40,'290');
+  ext(s,0,296,0,324);ext(s,554,296,554,324);
+  dimH(s,0,554,318,'554',false);
+  T(s,277,366,title,'lbl2');
+  T(s,277,381,sub,'lbl');
+}
+function labFlatEnd(s,title,sub){
+  R(s,0,0,269,290,'w1',{fill:'none'});
+  L(s,-14,290,283,290,'w');
+  ext(s,-20,0,-46,0);ext(s,-20,290,-46,290);
+  dimV(s,0,290,-40,'290');
+  ext(s,0,296,0,324);ext(s,269,296,269,324);
+  dimH(s,0,269,318,'269',false);
+  T(s,134,366,title,'lbl2');
+  T(s,134,381,sub,'lbl');
+}
+
+/* ---- ELEVATION J : NORTH BRICK WALL (west at left) ---- */
+(function(){
+  const s=document.getElementById('lelevJ');
+  const brick=defsHatch(s,'lebrick',9,'thin',0);
+  R(s,0,0,554,290,'',{fill:brick,opacity:.4});
+  labFlatLong(s,'ELEVATION J · NORTH WALL','EXPOSED BRICK · BLIND ARCHES · RAISED PLINTH');
+  // plinth, h 65
+  R(s,0,YV(65),554,65,'',{fill:'var(--hatch)',opacity:.4});
+  L(s,0,YV(65),554,YV(65),'w1');
+  T(s,14,YV(72),'RAISED BRICK PLINTH','lbl','start');
+  // blind arches: springing 185, crown ~235
+  for(const [a,b] of [[40,210],[280,450]]){
+    E('path',{d:`M${a} ${YV(65)} L${a} ${YV(185)} A97 97 0 0 1 ${b} ${YV(185)} L${b} ${YV(65)}`,class:'w1',fill:'none'},s);
+  }
+  T(s,125,YV(150),'BLIND ARCH','lbl');T(s,365,YV(150),'BLIND ARCH','lbl');
+  // radiators on plinth zone
+  R(s,60,YV(60),100,60,'dash');R(s,460,YV(60),90,60,'dash');
+  for(let x=68;x<152;x+=10)L(s,x,YV(55),x,YV(8),'thin');
+  T(s,110,YV(70),'RADIATOR','lbl');T(s,505,YV(70),'RADIATOR','lbl');
+  // router + sockets on plinth, conduit + detector, wall fan
+  R(s,215,YV(78),14,12,'furn');T(s,222,YV(86),'ROUTER','lbl');
+  R(s,248,YV(80),10,9,'furn');R(s,264,YV(80),10,9,'furn');
+  T(s,261,YV(92),'SKTS','lbl');
+  L(s,300,52,300,YV(65),'furn');
+  E('circle',{cx:300,cy:46,r:7,class:'furn'},s);
+  T(s,318,44,'HEAT DET. ON CONDUIT','lbl','start');
+  E('circle',{cx:505,cy:YV(180),r:20,class:'furn'},s);
+  E('circle',{cx:505,cy:YV(180),r:13,class:'thin'},s);
+  T(s,505,YV(210),'WALL FAN','lbl');
+  // trench cover at base
+  L(s,0,YV(6),554,YV(6),'thin');
+  T(s,540,YV(12),'CHEQUER PLATE TRENCH COVER','lbl','end');
+})();
+
+/* ---- ELEVATION K : SOUTH WALL (east at left) ---- */
+(function(){
+  const s=document.getElementById('lelevK');
+  labFlatLong(s,'ELEVATION K · SOUTH WALL','PAINTED PLASTER');
+  const px=x=>554-x;
+  R(s,px(300)-8,YV(126),16,12,'furn');T(s,px(300),YV(134),'2G SOCKET','lbl');
+  R(s,px(40)-5,YV(126),10,12,'furn');T(s,px(40),YV(134),'SWITCH','lbl');
+  // desk + chairs in front (dashed)
+  R(s,px(440),YV(74),360,74,'dash');
+  R(s,px(370)-10,YV(96),20,22,'dash');
+  T(s,px(260),YV(84),'DESK + PROJECTOR','lbl');
+})();
+
+/* ---- SECTION B-B (cut at x = 380, looking east) ---- */
+(function(){
+  const s=document.getElementById('lsect');
+  const brick=defsHatch(s,'lsbrick',5,'thin',45);
+  const stud=defsHatch(s,'lsstud',7,'thin',-45);
+  // north brick wall (left) with plinth; south stud wall (right)
+  R(s,-34,0,34,290,'',{fill:brick});R(s,-34,0,34,290,'w1',{fill:'none'});
+  R(s,0,YV(65),14,65,'',{fill:brick});R(s,0,YV(65),14,65,'w1',{fill:'none'});
+  T(s,20,YV(76),'PLINTH','lbl','start');
+  E('line',{x1:2,y1:YV(235),x2:2,y2:YV(65),class:'dash'},s);
+  T(s,10,YV(160),'BLIND ARCH RECESS','lbl','start');
+  R(s,269,0,12,290,'',{fill:stud});R(s,269,0,12,290,'w1',{fill:'none'});
+  // flat ceiling
+  L(s,-34,0,281,0,'w');
+  T(s,134,-14,'FLAT PLASTER CEILING','lbl');
+  // suspended LED panel (cut through panel 2, plan y 75..195)
+  R(s,75,36,120,12,'furn');
+  L(s,95,0,95,36,'furn');L(s,175,0,175,36,'furn');
+  L(s,79,52,191,52,'glassln');
+  T(s,135,68,'SUSPENDED LED PANEL','lbl');
+  // radiator + trench cover at north side
+  R(s,15,YV(60),10,60,'dash');T(s,28,YV(40),'RAD','lbl','start');
+  L(s,14,YV(4),44,YV(4),'w1');T(s,120,YV(10),'TRENCH COVER','lbl');
+  // desk (dashed), plan y 48..153
+  R(s,48,YV(74),105,74,'dash');T(s,100,YV(84),'DESK','lbl');
+  // floor + ground hatch
+  L(s,-48,290,295,290,'w');
+  for(let x=-44;x<295;x+=14)L(s,x,290,x-8,298,'thin');
+  // dims
+  ext(s,-40,0,-60,0);ext(s,-40,290,-60,290);
+  dimV(s,0,290,-54,'290');
+  ext(s,0,296,0,324);ext(s,269,296,269,324);
+  dimH(s,0,269,318,'269',false);
+  T(s,134,366,'SECTION B–B','lbl2');
+  T(s,134,381,'LOOKING EAST · CUT AT x = 380','lbl');
+})();
+
+/* ---- ELEVATION H : WEST END, MURAL + GLAZED DOOR (south at left) ---- */
+(function(){
+  const s=document.getElementById('lelevM');
+  labFlatEnd(s,'ELEVATION H · WEST END','PAINTED MURAL · GLAZED SCREEN + DOOR AT SOUTH');
+  // glazed zone: plan y 170..269 -> elev x 0..99; door y 175..265 -> x 4..94
+  L(s,99,0,99,290,'w1');
+  R(s,4,YV(210),90,210,'w1',{fill:'var(--sheet)'});
+  L(s,80,YV(115),80,YV(90),'w');
+  T(s,49,YV(222),'GLAZED DOOR','lbl');
+  L(s,10,YV(280),88,YV(216),'glassln');L(s,10,YV(216),88,YV(280),'glassln');
+  // mural (simplified motifs)
+  E('path',{d:'M150 290 V150 A42 42 0 0 1 234 150 V290',class:'thin',fill:'var(--ink)','fill-opacity':'.12'},s);
+  E('path',{d:'M110 290 A40 40 0 0 1 190 290',class:'thin',fill:'var(--anno)','fill-opacity':'.12'},s);
+  E('circle',{cx:130,cy:120,r:26,class:'thin',fill:'var(--glass)','fill-opacity':'.15'},s);
+  T(s,184,70,'PAINTED MURAL','lbl');
+  E('circle',{cx:210,cy:38,r:7,class:'furn'},s);
+  T(s,228,42,'DET.','lbl','start');
+})();
+
+/* ---- ELEVATION G : EAST END (north at left) ---- */
+(function(){
+  const s=document.getElementById('lelevL');
+  labFlatEnd(s,'ELEVATION G · EAST END','PAINTED PLASTER');
+  R(s,142,YV(96),16,12,'furn');
+  T(s,150,YV(104),'2G SOCKET','lbl');
+  L(s,0,YV(10),269,YV(10),'thin');
+})();
+
+/* ================= ROOM 4 : ENGINEERING ================= */
+/* plan: origin NW inner corner, x east 0..1100, y south 0..500.
+   North = brick wall with 2 steel windows; south = polished plaster
+   with lighting truss; west = papered glazed screen (kitchen beyond);
+   east = glazed screen + door to corridor. Brick jack arches on
+   steel beams across the width; beam soffit 280, crown 305. */
+
+/* ---- ENGINEERING FLOOR PLAN ---- */
+(function(){
+  const s=document.getElementById('eplan');
+  const W=1100,D=500,tB=34,tP=12;
+  const brick=defsHatch(s,'ebrick2',5,'thin',45);
+  const stud=defsHatch(s,'estud2',7,'thin',-45);
+  function wallRect(x,y,w,h,fill){R(s,x,y,w,h,'',{fill});R(s,x,y,w,h,'w1',{fill:'none'});}
+  // north brick wall with window openings 380..580 and 680..880
+  wallRect(-tP,-tB,380+tP,tB,brick);
+  wallRect(580,-tB,100,tB,brick);
+  wallRect(880,-tB,W-880+tP,tB,brick);
+  for(const [a,b] of [[380,580],[680,880]]){
+    L(s,a,-tB,a,0,'w1');L(s,b,-tB,b,0,'w1');
+    L(s,a,-tB+8,b,-tB+8,'glassln');
+    L(s,a,0,b,0,'thin');
+  }
+  // south plaster wall
+  wallRect(-tP,D,W+2*tP,20,stud);
+  // west glazed screen (papered)
+  L(s,0,0,0,D,'w1');L(s,-6,0,-6,D,'w1');L(s,-3,0,-3,D,'glassln');
+  for(const my of [125,250,375])L(s,-6,my,0,my,'w1');
+  // east glazed screen, door opening y 280..380
+  L(s,W,0,W,280,'w1');L(s,W+6,0,W+6,280,'w1');
+  L(s,W+3,0,W+3,280,'glassln');
+  L(s,W,380,W,D,'w1');L(s,W+6,380,W+6,D,'w1');L(s,W+3,380,W+3,D,'glassln');
+  L(s,W,280,W-100,280,'w1');
+  E('path',{d:`M${W} 380 A100 100 0 0 1 ${W-100} 280`,class:'thin'},s);
+  // heavy inner faces on solid walls
+  L(s,0,0,W,0,'w');L(s,0,D,W,D,'w');
+  // floor finish boundaries
+  L(s,250,80,1000,80,'thin');L(s,250,0,250,80,'thin');
+  L(s,1000,0,1000,D,'thin');
+  T(s,620,70,'RAISED BRICK STRIP +~15','lbl');
+  T(s,1050,250,'BRICK','lbl');T(s,1050,261,'PAVING','lbl');
+  T(s,550,470,'SCREED FLOOR','lbl');
+  // radiators on north wall face
+  R(s,390,2,170,8,'dash');T(s,475,24,'RAD','lbl');
+  R(s,880,2,120,8,'dash');T(s,940,24,'RAD','lbl');
+  // furniture (indicative, room in fit-out)
+  R(s,300,205,180,90,'furn');R(s,490,205,180,90,'furn');R(s,680,205,170,90,'furn');
+  T(s,575,255,'ASSEMBLY BENCHES · ALU EXTRUSION FRAMES','lbl');
+  R(s,870,120,160,80,'furn');T(s,950,165,'PACKING TABLE','lbl');
+  R(s,880,320,150,75,'furn');T(s,955,362,'TABLE','lbl');
+  R(s,950,430,140,55,'furn');T(s,1020,420,'SHELVING','lbl');
+  R(s,150,400,120,60,'furn');T(s,210,435,'SAW BENCH','lbl');
+  R(s,80,425,50,40,'furn');T(s,105,480,'TOOLS','lbl');
+  R(s,20,250,45,90,'furn');R(s,20,350,45,90,'furn');
+  T(s,90,300,'RACKING','lbl','start');
+  E('circle',{cx:1075,cy:465,r:8,class:'furn'},s);T(s,1075,448,'FE','lbl');
+  // section line C-C at x=560
+  E('line',{x1:560,y1:-100,x2:560,y2:600,class:'dimln','stroke-dasharray':'14 5 3 5'},s);
+  marker(s,560,-96,'C');marker(s,560,618,'C');
+  // dimensions: window positions along top, overall, width, door on east
+  const tx=[0,380,580,680,880,W];
+  for(const x of tx)ext(s,x,-tB-4,x,-64);
+  dimH(s,0,380,-52,'380');dimH(s,380,580,-52,'200');dimH(s,580,680,-52,'100');
+  dimH(s,680,880,-52,'200');dimH(s,880,W,-52,'220');
+  ext(s,0,-70,0,-92);ext(s,W,-70,W,-92);
+  dimH(s,0,W,-86,'1100');
+  ext(s,-16,0,-58,0);ext(s,-16,D,-58,D);
+  dimV(s,0,D,-52,'500');
+  ext(s,W+10,0,W+56,0);ext(s,W+10,280,W+56,280);ext(s,W+10,380,W+56,380);ext(s,W+10,D,W+56,D);
+  dimV(s,0,280,W+50,'280',false);
+  dimV(s,280,380,W+50,'100 DOOR',false);
+  dimV(s,380,D,W+50,'120',false);
+  // markers
+  marker(s,760,-96,'N');marker(s,760,618,'P');
+  marker(s,1230,150,'Q');marker(s,-95,150,'R');
+  T(s,550,668,'FLOOR PLAN · ENGINEERING','lbl2');
+  const sb=E('g',{transform:'translate(-110 690)'},s);
+  L(sb,0,0,200,0,'w1');
+  for(const x of [0,50,100,200])L(sb,x,-4,x,4,'w1');
+  R(sb,0,-3,50,3,'',{fill:'var(--ink)'});R(sb,100,-3,100,3,'',{fill:'var(--ink)'});
+  T(sb,0,16,'0','dimtx');T(sb,100,16,'100','dimtx');T(sb,200,16,'200 CM','dimtx');
+})();
+
+/* ---- ENGINEERING REFLECTED CEILING PLAN ---- */
+(function(){
+  const s=document.getElementById('ercp');
+  const W=1100,D=500;
+  R(s,0,0,W,D,'w1',{fill:'none'});
+  // steel beams across the width
+  for(const x of [0,220,440,660,880,1100]){L(s,x,0,x,D,'w');}
+  T(s,110,-14,'STEEL BEAMS AT ~220 CRS · BRICK JACK ARCHES BETWEEN','lbl','start');
+  for(const x of [110,330,550,770,990]){
+    E('line',{x1:x,y1:0,x2:x,y2:D,class:'thin','stroke-dasharray':'10 6'},s);
+  }
+  T(s,550,30,'ARCH CROWN 305 · BEAM SOFFIT ~280','lbl');
+  // lighting truss along south wall
+  L(s,20,395,W-20,395,'w1');L(s,20,415,W-20,415,'w1');
+  for(let x=30;x<W-20;x+=40)L(s,x,395,x+20,415,'thin');
+  T(s,550,385,'ALUMINIUM LIGHTING TRUSS SUSPENDED','lbl');
+  // LED strip on south wall
+  E('line',{x1:0,y1:488,x2:W,y2:488,class:'dash'},s);
+  T(s,550,478,'LED STRIP ON SOUTH WALL','lbl');
+  // heat detector + conduit, power drop
+  L(s,620,500,620,255,'furn');
+  E('circle',{cx:620,cy:248,r:7,class:'furn'},s);
+  T(s,644,244,'HEAT DET. ON CONDUIT','lbl','start');
+  E('circle',{cx:520,cy:300,r:6,class:'dash'},s);
+  T(s,520,325,'POWER DROP','lbl');
+  T(s,550,570,'REFLECTED CEILING PLAN · ENGINEERING','lbl2');
+})();
+
+/* ---- engineering frames ---- */
+const YJ=h=>305-h; // crown datum
+function engLongFrame(s,title,sub){
+  // scalloped jack-arch soffit: beams at 220 crs, arches rise 280 -> 305
+  let d='M0 305 L0 25';
+  for(const x of [0,220,440,660,880]){
+    d+=` M${x} 25 L${x+10} 25 A213 213 0 0 1 ${x+210} 25 L${x+220} 25`;
+  }
+  E('path',{d,class:'w1',fill:'none'},s);
+  L(s,1100,305,1100,25,'w1');
+  for(const x of [0,220,440,660,880,1100])R(s,x-5,25,10,10,'',{fill:'var(--ink)'});
+  L(s,-14,305,1114,305,'w');
+  ext(s,-20,0,-46,0);ext(s,-20,305,-46,305);
+  dimV(s,0,305,-40,'305');
+  ext(s,1106,25,1140,25);ext(s,1106,305,1140,305);
+  dimV(s,25,305,1134,'~280',false);
+  ext(s,0,311,0,339);ext(s,1100,311,1100,339);
+  dimH(s,0,1100,333,'1100',false);
+  T(s,550,392,title,'lbl2');
+  T(s,550,407,sub,'lbl');
+}
+function engEndFrame(s,title,sub){
+  R(s,0,25,500,280,'w1',{fill:'none'});
+  L(s,-14,305,514,305,'w');
+  ext(s,-20,25,-46,25);ext(s,-20,305,-46,305);
+  dimV(s,25,305,-40,'~280');
+  ext(s,0,311,0,339);ext(s,500,311,500,339);
+  dimH(s,0,500,333,'500',false);
+  T(s,250,392,title,'lbl2');
+  T(s,250,407,sub,'lbl');
+}
+
+/* ---- ELEVATION N : NORTH BRICK WALL (west at left) ---- */
+(function(){
+  const s=document.getElementById('eelevN');
+  const brick=defsHatch(s,'enbrick',9,'thin',0);
+  R(s,0,25,1100,280,'',{fill:brick,opacity:.4});
+  engLongFrame(s,'ELEVATION N · NORTH WALL','EXPOSED BRICK · STEEL WINDOWS · RAISED BRICK STRIP AT BASE');
+  // windows: sill 95, head 265
+  for(const [a,b] of [[380,580],[680,880]]){
+    R(s,a,YJ(265),b-a,170,'w1',{fill:'var(--sheet)'});
+    for(let x=a+40;x<b;x+=40)L(s,x,YJ(265),x,YJ(95),'glassln');
+    for(let h=137;h<265;h+=42)L(s,a,YJ(h),b,YJ(h),'glassln');
+  }
+  T(s,480,YJ(276),'STEEL WINDOW','lbl');T(s,780,YJ(276),'STEEL WINDOW','lbl');
+  // radiators
+  R(s,390,YJ(60),170,60,'dash');R(s,880,YJ(60),120,60,'dash');
+  for(let x=398;x<552;x+=10)L(s,x,YJ(55),x,YJ(8),'thin');
+  T(s,475,YJ(70),'RADIATOR','lbl');T(s,940,YJ(70),'RADIATOR','lbl');
+  // raised brick strip
+  R(s,250,YJ(15),750,15,'',{fill:'var(--hatch)',opacity:.4});
+  L(s,250,YJ(15),1000,YJ(15),'w1');
+  T(s,180,YJ(24),'BRICK STRIP +15','lbl');
+  // thermostat + racking at west end
+  R(s,945,YJ(146),12,16,'furn');T(s,951,YJ(156),'STAT','lbl');
+  R(s,20,YJ(180),90,180,'dash');
+  for(let h=40;h<180;h+=36)L(s,20,YJ(h),110,YJ(h),'thin');
+  T(s,65,YJ(190),'RACKING','lbl');
+})();
+
+/* ---- ELEVATION P : SOUTH PLASTER WALL (east at left) ---- */
+(function(){
+  const s=document.getElementById('eelevP');
+  engLongFrame(s,'ELEVATION P · SOUTH WALL','POLISHED PLASTER · SUSPENDED LIGHTING TRUSS + LED STRIP');
+  const px=x=>1100-x;
+  // truss h 240..255, full length
+  L(s,20,YJ(255),1080,YJ(255),'w1');L(s,20,YJ(240),1080,YJ(240),'w1');
+  for(let x=30;x<1080;x+=40)L(s,x,YJ(240),x+20,YJ(255),'thin');
+  T(s,550,YJ(264),'LIGHTING TRUSS','lbl');
+  E('line',{x1:0,y1:YJ(266),x2:1100,y2:YJ(266),class:'glassln','stroke-dasharray':'8 5'},s);
+  T(s,110,YJ(274),'LED STRIP','lbl');
+  // grilles: plan x 200..280 and 500..570
+  R(s,px(280),YJ(185),80,35,'furn');
+  for(let x=px(280)+6;x<px(200)-4;x+=7)L(s,x,YJ(181),x,YJ(154),'thin');
+  T(s,px(240),YJ(195),'VENT GRILLE','lbl');
+  R(s,px(570),YJ(230),70,30,'furn');
+  for(let x=px(570)+6;x<px(500)-4;x+=7)L(s,x,YJ(226),x,YJ(204),'thin');
+  T(s,px(535),YJ(240),'VENT GRILLE','lbl');
+  // fire action sign
+  R(s,px(140),YJ(160),14,20,'furn');T(s,px(133),YJ(170),'FIRE ACTION','lbl');
+  // furniture in front (dashed): shelving, benches, saw bench
+  R(s,px(1090),YJ(180),140,180,'dash');T(s,px(1020),YJ(190),'SHELVING','lbl');
+  R(s,px(850),YJ(90),550,90,'dash');
+  R(s,px(660),YJ(200),150,110,'dash');
+  T(s,px(575),YJ(100),'ASSEMBLY BENCHES + GANTRY FRAMES','lbl');
+  R(s,px(270),YJ(90),120,90,'dash');T(s,px(210),YJ(100),'SAW BENCH','lbl');
+})();
+
+/* ---- SECTION C-C (cut at x = 560, looking east) ---- */
+(function(){
+  const s=document.getElementById('esect');
+  const brick=defsHatch(s,'esbrick',5,'thin',45);
+  const stud=defsHatch(s,'esstud',7,'thin',-45);
+  // walls: north brick (left) with window cut, south plaster (right)
+  R(s,-34,26,34,YJ(265)-26,'',{fill:brick});R(s,-34,26,34,YJ(265)-26,'w1',{fill:'none'});
+  R(s,-34,YJ(95),34,95,'',{fill:brick});R(s,-34,YJ(95),34,95,'w1',{fill:'none'});
+  L(s,-3,YJ(265),-3,YJ(95),'glassln');
+  T(s,10,YJ(180),'STEEL WINDOW (CUT)','lbl','start');
+  R(s,500,26,20,279,'',{fill:stud});R(s,500,26,20,279,'w1',{fill:'none'});
+  // ceiling: arch crown at 305 (cut mid-bay), beam soffit 280 dashed beyond
+  L(s,-34,0,520,0,'w');
+  E('line',{x1:-34,y1:25,x2:520,y2:25,class:'dash'},s);
+  T(s,250,-14,'BRICK JACK ARCH · CROWN 305','lbl');
+  T(s,250,42,'STEEL BEAM SOFFIT ~280 BEYOND','lbl');
+  // truss near south wall
+  R(s,420,YJ(255),24,15,'w1',{fill:'none'});
+  L(s,420,YJ(255),444,YJ(240),'thin');L(s,444,YJ(255),420,YJ(240),'thin');
+  L(s,432,YJ(255),432,25,'thin');
+  T(s,432,YJ(266),'TRUSS','lbl');
+  E('line',{x1:496,y1:YJ(266),x2:476,y2:YJ(266),class:'glassln'},s);
+  T(s,470,YJ(270),'LED','lbl','end');
+  // radiator + raised brick strip at north side
+  R(s,4,YJ(60),12,60,'dash');
+  R(s,0,YJ(15),80,15,'',{fill:'var(--hatch)',opacity:.4});
+  L(s,0,YJ(15),80,YJ(15),'w1');L(s,80,YJ(15),80,305,'w1');
+  T(s,46,YJ(24),'BRICK STRIP','lbl');
+  // assembly bench (dashed) mid room
+  R(s,200,YJ(90),90,90,'dash');
+  R(s,210,YJ(200),70,110,'dash');
+  T(s,245,YJ(210),'BENCH + GANTRY','lbl');
+  // floor + ground hatch
+  L(s,-48,305,534,305,'w');
+  for(let x=-44;x<534;x+=14)L(s,x,305,x-8,313,'thin');
+  // dims
+  ext(s,-40,0,-60,0);ext(s,-40,305,-60,305);
+  dimV(s,0,305,-54,'305');
+  ext(s,524,25,552,25);ext(s,524,305,552,305);
+  dimV(s,25,305,546,'~280',false);
+  ext(s,0,311,0,339);ext(s,500,311,500,339);
+  dimH(s,0,500,333,'500',false);
+  T(s,250,392,'SECTION C–C','lbl2');
+  T(s,250,407,'LOOKING EAST','lbl');
+})();
+
+/* ---- ELEVATION Q : EAST END GLAZED SCREEN (north at left) ---- */
+(function(){
+  const s=document.getElementById('eelevQ');
+  engEndFrame(s,'ELEVATION Q · EAST END','GLAZED SCREEN + DOOR TO CORRIDOR');
+  // door plan y 280..380 -> x 280..380
+  for(const mx of [140,280,380])L(s,mx,25,mx,305,'w1');
+  R(s,284,YJ(210),92,210,'w1',{fill:'var(--sheet)'});
+  L(s,296,YJ(120),296,YJ(90),'w');
+  T(s,330,YJ(222),'GLAZED DOOR','lbl');
+  for(const [a,b] of [[0,140],[140,280],[380,500]]){
+    L(s,a+8,297,b-8,YJ(255),'glassln');
+    L(s,a+8,YJ(255),b-8,297,'glassln');
+  }
+  E('circle',{cx:455,cy:YJ(50),r:9,class:'dash'},s);
+  T(s,455,YJ(70),'FE','lbl');
+})();
+
+/* ---- ELEVATION R : WEST END GLAZED SCREEN, PAPERED (south at left) ---- */
+(function(){
+  const s=document.getElementById('eelevR');
+  engEndFrame(s,'ELEVATION R · WEST END','GLAZED SCREEN · PAPERED OVER · KITCHEN BEYOND');
+  const px=y=>500-y;
+  for(const mx of [125,250,375])L(s,mx,25,mx,305,'w1');
+  for(const [a,b] of [[0,125],[125,250],[250,375],[375,500]]){
+    R(s,a+6,YJ(270),b-a-12,240,'',{fill:'var(--hatch)',opacity:.25});
+  }
+  T(s,250,YJ(150),'TEMPORARY PAPER COVERING','lbl');
+  // racking in front (dashed): plan y 250..440 -> elev x 60..250
+  R(s,px(440),YJ(180),90,180,'dash');R(s,px(340),YJ(180),90,180,'dash');
+  for(const rx of [px(440),px(340)])for(let h=40;h<180;h+=36)L(s,rx,YJ(h),rx+90,YJ(h),'thin');
+  T(s,px(390),YJ(190),'RACKING','lbl');
+})();
+
+/* ================= ROOM 5 : ROBOTICS ================= */
+/* plan: origin NW inner corner, x east 0..1340, y south 0..384.
+   North = painted wall with whiteboard + desk run; south = polished
+   plaster with suspended lightboxes + AC units; west end = external
+   glazed steel screen + door; east end = brick paved zone, door
+   assumed at north corner. Brick barrel vault, springing ~240,
+   crown 305 (YJ datum reused). */
+
+/* ---- ROBOTICS FLOOR PLAN ---- */
+(function(){
+  const s=document.getElementById('rplan');
+  const W=1340,D=384;
+  const brick=defsHatch(s,'rbrick',5,'thin',45);
+  const stud=defsHatch(s,'rstud',7,'thin',-45);
+  function wallRect(x,y,w,h,fill){R(s,x,y,w,h,'',{fill});R(s,x,y,w,h,'w1',{fill:'none'});}
+  wallRect(-6,-12,W+18,12,stud);            // north
+  wallRect(-6,D,W+18,20,brick);             // south (plaster on masonry)
+  wallRect(W,0,12,20,stud);                 // east, door opening y 20..110
+  wallRect(W,110,12,D-110,stud);
+  // west external glazed screen, door opening y 200..300
+  L(s,0,0,0,D,'w1');L(s,-6,0,-6,D,'w1');L(s,-3,0,-3,D,'glassln');
+  for(const my of [96,192])L(s,-6,my,0,my,'w1');
+  L(s,0,300,100,300,'w1');
+  E('path',{d:'M0 200 A100 100 0 0 1 100 300',class:'thin'},s);
+  T(s,60,320,'EXT. DOOR','lbl');
+  // east door leaf (assumed)
+  L(s,W,110,W-100,110,'w1');
+  E('path',{d:`M${W} 20 A90 90 0 0 0 ${W-90} 110`,class:'thin'},s);
+  // heavy inner faces
+  L(s,0,0,W,0,'w');L(s,0,D,W,D,'w');
+  // floor zones
+  L(s,1050,0,1050,D,'thin');L(s,1290,0,1290,D,'thin');
+  T(s,500,200,'SCREED FLOOR','lbl');
+  T(s,1170,205,'BRICK','lbl');T(s,1170,216,'PAVING','lbl');
+  T(s,1315,200,'TIMBER','lbl');
+  // furniture, north side
+  R(s,140,12,200,80,'furn');R(s,345,12,200,80,'furn');R(s,550,12,200,80,'furn');
+  T(s,445,60,'DESK RUN + WORKSTATIONS','lbl');
+  for(const cx of [240,450,650])E('circle',{cx,cy:130,r:22,class:'dash'},s);
+  R(s,770,12,160,40,'furn');R(s,950,12,160,40,'furn');
+  T(s,940,70,'CUBBY SHELVING','lbl');
+  // mobile whiteboard + robot + bench
+  R(s,840,110,12,150,'furn');T(s,846,280,'MOBILE WHITEBOARD','lbl');
+  R(s,980,140,120,100,'furn');
+  E('circle',{cx:1040,cy:190,r:16,class:'dash'},s);
+  T(s,1040,124,'ROBOT ON','lbl');T(s,1040,135,'MOBILE GANTRY','lbl');
+  R(s,880,265,140,70,'furn');T(s,950,352,'BENCH','lbl');
+  // east end group
+  R(s,1120,50,70,60,'furn');R(s,1200,50,70,60,'furn');
+  T(s,1195,36,'3D PRINTERS','lbl');
+  R(s,1230,150,90,110,'furn');T(s,1275,240,'CABINET +','lbl');T(s,1275,251,'FLIGHT CASE','lbl');
+  R(s,1180,280,110,45,'furn');T(s,1235,340,'SPEAKER SHELF','lbl');
+  R(s,1090,285,30,90,'furn');L(s,1095,290,1095,370,'w1');
+  T(s,1090,265,'TV','lbl');
+  R(s,1150,374,120,8,'dash');T(s,1210,364,'RAD','lbl');
+  E('circle',{cx:30,cy:355,r:8,class:'furn'},s);T(s,30,338,'FE','lbl');
+  // south wall: lightboxes, AC units, switches
+  for(const xi of [100,260,420,580,740,900])R(s,xi,374,110,8,'furn');
+  T(s,560,360,'SUSPENDED LIGHTBOX PANELS OVER','lbl');
+  R(s,310,368,80,14,'dash');T(s,350,356,'AC OVER','lbl');
+  R(s,1000,368,80,14,'dash');T(s,1040,356,'AC OVER','lbl');
+  L(s,1250,384,1250,376,'w1');T(s,1250,366,'SW','lbl');
+  // section line D-D at x=600
+  E('line',{x1:600,y1:-100,x2:600,y2:480,class:'dimln','stroke-dasharray':'14 5 3 5'},s);
+  marker(s,600,-96,'D');marker(s,600,498,'D');
+  // dimensions
+  ext(s,0,-16,0,-92);ext(s,W,-16,W,-92);
+  dimH(s,0,W,-86,'1340');
+  ext(s,-10,0,-58,0);ext(s,-10,D,-58,D);
+  dimV(s,0,D,-52,'384');
+  ext(s,W+16,0,W+56,0);ext(s,W+16,20,W+56,20);ext(s,W+16,110,W+56,110);ext(s,W+16,D,W+56,D);
+  dimV(s,0,20,W+50,'20',false);
+  dimV(s,20,110,W+50,'90 DOOR',false);
+  dimV(s,110,D,W+50,'274',false);
+  // markers
+  marker(s,300,-96,'S');marker(s,300,498,'T');
+  marker(s,-95,300,'U');marker(s,1440,300,'V');
+  T(s,670,560,'FLOOR PLAN · ROBOTICS','lbl2');
+  const sb=E('g',{transform:'translate(-110 582)'},s);
+  L(sb,0,0,200,0,'w1');
+  for(const x of [0,50,100,200])L(sb,x,-4,x,4,'w1');
+  R(sb,0,-3,50,3,'',{fill:'var(--ink)'});R(sb,100,-3,100,3,'',{fill:'var(--ink)'});
+  T(sb,0,16,'0','dimtx');T(sb,100,16,'100','dimtx');T(sb,200,16,'200 CM','dimtx');
+})();
+
+/* ---- ROBOTICS REFLECTED CEILING PLAN ---- */
+(function(){
+  const s=document.getElementById('rrcp');
+  const W=1340,D=384;
+  R(s,0,0,W,D,'w1',{fill:'none'});
+  E('line',{x1:0,y1:192,x2:W,y2:192,class:'thin','stroke-dasharray':'12 6'},s);
+  T(s,1320,182,'VAULT CROWN 305','lbl','end');
+  for(const x of [430,880]){L(s,x,0,x,D,'w1');L(s,x+16,0,x+16,D,'w1');}
+  T(s,438,-14,'BRICK ARCH BANDS','lbl');
+  L(s,300,192,1080,192,'furn');
+  for(const cx of [360,1080]){E('circle',{cx,cy:192,r:7,class:'furn'},s);}
+  T(s,720,216,'HEAT DETECTORS ON CONDUIT AT CROWN','lbl');
+  T(s,670,470,'REFLECTED CEILING PLAN · ROBOTICS','lbl2');
+  T(s,670,485,'BRICK BARREL VAULT SPANNING 384','lbl');
+})();
+
+/* ---- robotics frames ---- */
+const YR=h=>240-h; // long walls: springing datum
+function robLongFrame(s,title,sub){
+  R(s,0,0,1340,240,'w1',{fill:'none'});
+  L(s,-14,240,1354,240,'w');
+  T(s,670,-12,'VAULT SPRINGING LINE · CROWN AT 305 ABOVE FFL','lbl');
+  ext(s,-20,0,-46,0);ext(s,-20,240,-46,240);
+  dimV(s,0,240,-40,'~240');
+  ext(s,0,246,0,274);ext(s,1340,246,1340,274);
+  dimH(s,0,1340,268,'1340',false);
+  T(s,670,330,title,'lbl2');
+  T(s,670,345,sub,'lbl');
+}
+function robEndArch(s,title,sub){
+  E('path',{d:'M0 305 L0 65 A316 316 0 0 1 384 65 L384 305',class:'w1',fill:'none'},s);
+  L(s,-14,305,398,305,'w');
+  ext(s,-20,305,-46,305);ext(s,188,0,-46,0);
+  dimV(s,0,305,-40,'305');
+  ext(s,388,65,420,65);ext(s,388,305,420,305);
+  dimV(s,65,305,414,'~240',false);
+  ext(s,0,311,0,339);ext(s,384,311,384,339);
+  dimH(s,0,384,333,'384',false);
+  T(s,192,386,title,'lbl2');
+  T(s,192,401,sub,'lbl');
+}
+
+/* ---- ELEVATION S : NORTH WALL (west at left) ---- */
+(function(){
+  const s=document.getElementById('relevS');
+  robLongFrame(s,'ELEVATION S · NORTH WALL','PAINTED PLASTER · WHITEBOARD · DESK RUN');
+  // wall whiteboard
+  R(s,180,YR(200),220,120,'w1',{fill:'var(--sheet)'});
+  T(s,290,YR(208),'WHITEBOARD','lbl');
+  // TV swing arm + sockets
+  L(s,700,YR(205),760,YR(205),'furn');L(s,700,YR(205),700,YR(185),'furn');
+  T(s,730,YR(214),'TV ARM','lbl');
+  R(s,500,YR(36),16,10,'furn');R(s,900,YR(36),16,10,'furn');
+  T(s,500,YR(44),'2G','lbl');T(s,900,YR(44),'2G','lbl');
+  // desks + monitors + shelving + mobile whiteboard (dashed)
+  R(s,140,YR(74),610,74,'dash');
+  for(const mx of [220,420,620])R(s,mx,YR(118),52,40,'dash');
+  T(s,445,YR(84),'DESK RUN + WORKSTATIONS','lbl');
+  for(const rx of [770,950]){
+    R(s,rx,YR(120),160,120,'dash');
+    L(s,rx,YR(60),rx+160,YR(60),'thin');
+    L(s,rx+80,YR(120),rx+80,240,'thin');
+  }
+  T(s,940,YR(130),'CUBBY SHELVING','lbl');
+  R(s,840,YR(190),150,120,'dash');
+  T(s,915,YR(200),'MOBILE WHITEBOARD','lbl');
+})();
+
+/* ---- ELEVATION T : SOUTH WALL (east at left) ---- */
+(function(){
+  const s=document.getElementById('relevT');
+  robLongFrame(s,'ELEVATION T · SOUTH WALL','POLISHED PLASTER · SUSPENDED LIGHTBOX ROW · AC UNITS');
+  const px=x=>1340-x;
+  // lightboxes at staggered heights on cable hangers
+  const boxes=[[100,205],[260,185],[420,205],[580,185],[740,205],[900,185]];
+  for(const [xi,top] of boxes){
+    const a=px(xi+110);
+    R(s,a,YR(top),110,65,'furn',{fill:'var(--sheet)'});
+    L(s,a+16,YR(top),a+16,0,'thin');L(s,a+94,YR(top),a+94,0,'thin');
+  }
+  T(s,670,YR(222),'SUSPENDED LIGHTBOX PANELS','lbl');
+  // AC units high level
+  R(s,px(390),YR(232),80,40,'furn');T(s,px(350),YR(240),'AC UNIT','lbl');
+  R(s,px(1080),YR(232),80,40,'furn');T(s,px(1040),YR(240),'AC UNIT','lbl');
+  // switches + radiator at east end (left)
+  R(s,px(1252),YR(126),10,12,'furn');T(s,px(1247),YR(134),'SW','lbl');
+  R(s,px(1270),YR(60),120,60,'dash');
+  for(let x=px(1270)+8;x<px(1150)-6;x+=10)L(s,x,YR(55),x,YR(8),'thin');
+  T(s,px(1210),YR(70),'RADIATOR','lbl');
+})();
+
+/* ---- SECTION D-D (cut at x = 600, looking east) ---- */
+(function(){
+  const s=document.getElementById('rsect');
+  const brick=defsHatch(s,'rsbrick',5,'thin',45);
+  const stud=defsHatch(s,'rsstud',7,'thin',-45);
+  // walls: north painted (left), south plaster on masonry (right)
+  R(s,-12,65,12,240,'',{fill:stud});R(s,-12,65,12,240,'w1',{fill:'none'});
+  R(s,384,65,20,240,'',{fill:brick});R(s,384,65,20,240,'w1',{fill:'none'});
+  // vault: inner + outer arc
+  E('path',{d:'M0 65 A316 316 0 0 1 384 65',class:'w',fill:'none'},s);
+  E('path',{d:'M12 71 A304 304 0 0 1 372 71',class:'w1',fill:'none'},s);
+  T(s,192,-24,'EXPOSED BRICK BARREL VAULT','lbl');
+  E('circle',{cx:192,cy:10,r:6,class:'furn'},s);
+  T(s,216,14,'HEAT DET.','lbl','start');
+  // lightbox on south wall (cut through panel at plan x 580..690)
+  R(s,368,YJ(205),12,65,'furn');
+  L(s,374,YJ(205),374,YJ(240),'thin');
+  T(s,360,YJ(215),'LIGHTBOX','lbl','end');
+  // whiteboard on north wall + desk (dashed)
+  L(s,2,YJ(200),2,YJ(80),'w1');
+  T(s,14,YJ(190),'WHITEBOARD','lbl','start');
+  R(s,12,YJ(74),92,74,'dash');
+  T(s,60,YJ(84),'DESK','lbl');
+  // floor + ground hatch
+  L(s,-26,305,418,305,'w');
+  for(let x=-22;x<418;x+=14)L(s,x,305,x-8,313,'thin');
+  // dims
+  ext(s,188,0,-46,0);ext(s,-18,305,-46,305);
+  dimV(s,0,305,-40,'305');
+  ext(s,408,65,436,65);ext(s,408,305,436,305);
+  dimV(s,65,305,430,'~240',false);
+  ext(s,0,311,0,339);ext(s,384,311,384,339);
+  dimH(s,0,384,333,'384',false);
+  T(s,192,386,'SECTION D–D','lbl2');
+  T(s,192,401,'LOOKING EAST','lbl');
+})();
+
+/* ---- ELEVATION U : WEST END, EXTERNAL GLAZED SCREEN (south at left) ---- */
+(function(){
+  const s=document.getElementById('relevU');
+  robEndArch(s,'ELEVATION U · WEST END','EXTERNAL STEEL GLAZED SCREEN + DOOR');
+  const px=y=>384-y;
+  // mullions + transom
+  for(const mx of [192,288])L(s,mx,12,mx,305,'w1');
+  L(s,0,YJ(210),384,YJ(210),'w1');
+  // door plan y 200..300 -> elev x 84..184
+  R(s,84,YJ(210),100,210,'w1',{fill:'var(--sheet)'});
+  L(s,170,YJ(120),170,YJ(90),'w');
+  T(s,134,YJ(222),'DOOR','lbl');
+  for(const [a,b] of [[0,84],[184,288],[288,384]]){
+    L(s,a+8,297,b-8,YJ(200),'glassln');
+    L(s,a+8,YJ(200),b-8,297,'glassln');
+  }
+  E('circle',{cx:340,cy:YJ(50),r:9,class:'dash'},s);
+  T(s,340,YJ(70),'FE','lbl');
+})();
+
+/* ---- ELEVATION V : EAST END (north at left) ---- */
+(function(){
+  const s=document.getElementById('relevV');
+  const brick=defsHatch(s,'rvbrick',9,'thin',0);
+  E('path',{d:'M0 305 L0 65 A316 316 0 0 1 384 65 L384 305 Z',fill:brick,opacity:'.35'},s);
+  robEndArch(s,'ELEVATION V · EAST END','DOOR TO CORRIDOR (ASSUMED) · BRICK PAVED ZONE');
+  // door plan y 20..110 -> elev x 20..110
+  R(s,20,YJ(210),90,210,'w1',{fill:'var(--sheet)'});
+  L(s,98,YJ(120),98,YJ(90),'w');
+  T(s,65,YJ(222),'DOOR','lbl');
+  // radiator + east end group (dashed, in front)
+  R(s,150,YJ(60),100,60,'dash');
+  for(let x=158;x<244;x+=10)L(s,x,YJ(55),x,YJ(8),'thin');
+  T(s,200,YJ(70),'RADIATOR','lbl');
+  R(s,250,YJ(140),110,140,'dash');
+  T(s,305,YJ(150),'CABINET + CASE','lbl');
+  R(s,130,YJ(130),90,70,'dash');
+  T(s,175,YJ(140),'PRINTER','lbl');
+})();
+
+/* ================= CAMERA COVERAGE STUDY ================= */
+function wedge(g,cx,cy,dir,fov,r,fill){
+  const a1=(dir-fov/2)*Math.PI/180,a2=(dir+fov/2)*Math.PI/180;
+  const x1=(cx+r*Math.cos(a1)).toFixed(1),y1=(cy+r*Math.sin(a1)).toFixed(1);
+  const x2=(cx+r*Math.cos(a2)).toFixed(1),y2=(cy+r*Math.sin(a2)).toFixed(1);
+  E('path',{d:`M${cx} ${cy} L${x1} ${y1} A${r} ${r} 0 ${fov>180?1:0} 1 ${x2} ${y2} Z`,
+    fill,'fill-opacity':'.26',stroke:fill,'stroke-width':'1.1','stroke-opacity':'.75'},g);
+}
+/* Camera plans render LIVE from the walkthrough layout saved in this
+   browser (localStorage camLayout-v2); falls back to the issued plan. */
+const CAMPAL=['var(--cam1)','var(--cam2)','var(--cam3)','var(--cam4)'];
+const CTY={usb:{fov:112,r:280,lbl:'USB'},hq6:{fov:55,r:550,lbl:'HQ 6MM'},hq16:{fov:22,r:1340,lbl:'HQ 16MM'}};
+const CDEF=[
+  {code:'C1',ri:0,x:12,y:12,dir:45,type:'usb',ci:0},
+  {code:'C2',ri:0,x:342,y:303,dir:225,type:'usb',ci:1},
+  {code:'C3',ri:2,x:8,y:235,dir:0,type:'hq6',ci:0},
+  {code:'C4',ri:2,x:907,y:230,dir:180,type:'hq6',ci:1},
+  {code:'C5',ri:2,x:600,y:8,dir:90,type:'usb',ci:2},
+  {code:'C6',ri:1,x:546,y:135,dir:180,type:'hq6',ci:0},
+  {code:'C7',ri:1,x:8,y:85,dir:0,type:'hq6',ci:1},
+  {code:'C8',ri:1,x:300,y:6,dir:90,type:'usb',ci:2},
+  {code:'C9',ri:3,x:180,y:492,dir:270,type:'hq6',ci:0},
+  {code:'C10',ri:3,x:550,y:492,dir:270,type:'hq6',ci:1},
+  {code:'C11',ri:3,x:920,y:492,dir:270,type:'hq6',ci:2},
+  {code:'C12',ri:3,x:575,y:8,dir:90,type:'usb',ci:3},
+  {code:'C13',ri:4,x:220,y:376,dir:270,type:'hq6',ci:0},
+  {code:'C14',ri:4,x:670,y:376,dir:270,type:'hq6',ci:1},
+  {code:'C15',ri:4,x:1120,y:376,dir:270,type:'hq6',ci:2},
+  {code:'C16',ri:4,x:1332,y:192,dir:180,type:'hq16',ci:3}
+];
+const CROOMS=[
+  ['camoff',354,315,[],'OFFICE'],
+  ['camlab',554,269,[277],'LAB'],
+  ['camcave',915,460,[460],'CAVE'],
+  ['cameng',1100,500,[366,733],'ENGINEERING'],
+  ['camrob',1340,384,[447,893],'ROBOTICS']
+];
+function camLayout(){
+  try{
+    const s=JSON.parse(localStorage.getItem('camLayout-v2'));
+    if(Array.isArray(s)&&s.length)return s;
+  }catch(e){}
+  return CDEF;
+}
+function renderCamPlans(){
+  const cams=camLayout();
+  const live=cams!==CDEF;
+  CROOMS.forEach((RM,ri)=>{
+    const [id,W,D,zones,title]=RM;
+    const s=document.getElementById(id);
+    if(!s)return;
+    while(s.firstChild)s.removeChild(s.firstChild);
+    const defs=E('defs',{},s);
+    const cp=E('clipPath',{id:id+'clip'},defs);
+    E('rect',{x:0,y:0,width:W,height:D},cp);
+    const g=E('g',{'clip-path':`url(#${id}clip)`},s);
+    const here=cams.filter(c=>c.ri===ri&&c.on!==false);
+    for(const c of here){
+      const t=CTY[c.type]||CTY.hq6;
+      wedge(g,c.x,c.y,c.dir,t.fov,t.r,CAMPAL[(c.ci||0)%4]);
+    }
+    R(s,0,0,W,D,'w',{fill:'none'});
+    for(const zx of zones)E('line',{x1:zx,y1:0,x2:zx,y2:D,class:'thin','stroke-dasharray':'10 6'},s);
+    for(const c of here){
+      const t=CTY[c.type]||CTY.hq6;
+      E('circle',{cx:c.x,cy:c.y,r:7,class:'mk'},s);
+      const dr=c.dir*Math.PI/180;
+      const lx=Math.min(W-15,Math.max(15,c.x+Math.cos(dr)*55));
+      const ly=Math.min(D-8,Math.max(16,c.y+Math.sin(dr)*55));
+      T(s,lx,ly,`${c.code} · ${t.lbl}`,'lbl');
+    }
+    const hidden=cams.filter(c=>c.ri===ri&&c.on===false).length;
+    T(s,W/2,D+44,`${title} · ${here.length} CAMERA${here.length===1?'':'S'}${hidden?` (+${hidden} HIDDEN)`:''}${live?' · LIVE WALKTHROUGH LAYOUT':' · ISSUED PLAN'}`,'lbl2');
+  });
+}
+renderCamPlans();
+addEventListener('storage',e=>{if(e&&e.key==='camLayout-v2')renderCamPlans();});
+addEventListener('camlayout',renderCamPlans);
+addEventListener('focus',renderCamPlans);
+})();</script>
+
+</section>
+<section id="view3d" class="page">
+
+<canvas id="gl"></canvas>
+<div class="hud">
+  <h1>Office Walkthrough</h1>
+  <div class="room" id="roomlbl">&nbsp;</div>
+  <div class="keys"><b>Drag</b> to look &nbsp;·&nbsp; <b>W A S D</b> / arrows to walk<br>
+  <b>Shift</b> to move faster &nbsp;·&nbsp; buttons below to teleport<br>
+  No collision: you can walk through walls between rooms.<br><br>
+  <b>Edit cameras</b> in the panel: pick one, then Move or Aim<br>
+  and click a floor spot; swap USB / HQ types; add or delete.<br>
+  Your layout autosaves in this browser. Export sends me JSON.</div>
+</div>
+<div class="bar" id="bar"></div>
+<div class="pad">
+  <span></span><button data-mv="f">▲</button><span></span>
+  <button data-mv="l">◀</button><button data-mv="b">▼</button><button data-mv="r">▶</button>
+</div>
+<div class="pip" id="pip"><div class="pl" id="pipl"></div></div>
+
+<script>(function(){
+
+'use strict';
+/* ---------- mat4 ---------- */
+function mMul(a,b){const o=new Array(16);
+  for(let c=0;c<4;c++)for(let r=0;r<4;r++)
+    o[c*4+r]=a[r]*b[c*4]+a[4+r]*b[c*4+1]+a[8+r]*b[c*4+2]+a[12+r]*b[c*4+3];
+  return o;}
+function mPersp(fov,asp,n,f){const t=1/Math.tan(fov/2);
+  return [t/asp,0,0,0, 0,t,0,0, 0,0,(f+n)/(n-f),-1, 0,0,2*f*n/(n-f),0];}
+function mRotX(a){const c=Math.cos(a),s=Math.sin(a);return [1,0,0,0, 0,c,s,0, 0,-s,c,0, 0,0,0,1];}
+function mRotY(a){const c=Math.cos(a),s=Math.sin(a);return [c,0,-s,0, 0,1,0,0, s,0,c,0, 0,0,0,1];}
+function mTrans(x,y,z){return [1,0,0,0, 0,1,0,0, 0,0,1,0, x,y,z,1];}
+
+/* ---------- GL ---------- */
+const cvs=document.getElementById('gl');
+const gl=cvs.getContext('webgl',{antialias:true});
+const VS=`attribute vec3 aPos;attribute vec3 aNor;attribute vec2 aUV;attribute vec4 aCol;
+uniform mat4 uVP;varying vec4 vCol;varying vec3 vNor;varying vec2 vUV;varying float vW;varying float vY;varying vec3 vPos;
+void main(){gl_Position=uVP*vec4(aPos,1.0);vCol=aCol;vNor=aNor;vUV=aUV;vW=gl_Position.w;vY=aPos.y;vPos=aPos;}`;
+const FS=`precision mediump float;
+varying vec4 vCol;varying vec3 vNor;varying vec2 vUV;varying float vW;varying float vY;varying vec3 vPos;
+uniform vec3 uLight;uniform vec3 uSky;uniform sampler2D uTex;uniform float uEmis;uniform float uFog;
+const int MAXL=16;
+uniform vec4 uLP[MAXL];
+uniform vec4 uLC[MAXL];
+void main(){
+  vec4 t=texture2D(uTex,vUV);
+  vec3 N=normalize(vNor);
+  float hemi=0.5+0.5*N.y;
+  vec3 acc=mix(vec3(0.33,0.31,0.29),vec3(0.50,0.52,0.56),hemi);
+  acc+=vec3(1.0,0.95,0.85)*(abs(dot(N,uLight))*0.30);
+  for(int i=0;i<MAXL;i++){
+    vec3 dl=uLP[i].xyz-vPos;
+    float dist=length(dl)+0.001;
+    float att=clamp(1.0-dist/uLP[i].w,0.0,1.0);
+    acc+=uLC[i].rgb*(abs(dot(N,dl/dist))*att*att);
+  }
+  float ao=0.78+0.22*clamp(vY/170.0,0.0,1.0);
+  vec3 c=vCol.rgb*t.rgb*mix(acc*ao,vec3(1.35),uEmis);
+  c=pow(c,vec3(0.92));
+  float f=clamp((vW-2200.0)/9500.0,0.0,0.94)*uFog;
+  gl_FragColor=vec4(mix(c,uSky,f),vCol.a);
+}`;
+function sh(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);
+  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw gl.getShaderInfoLog(s);return s;}
+const prog=gl.createProgram();
+gl.attachShader(prog,sh(gl.VERTEX_SHADER,VS));
+gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,FS));
+gl.linkProgram(prog);gl.useProgram(prog);
+const L={pos:gl.getAttribLocation(prog,'aPos'),nor:gl.getAttribLocation(prog,'aNor'),
+  uv:gl.getAttribLocation(prog,'aUV'),col:gl.getAttribLocation(prog,'aCol'),
+  vp:gl.getUniformLocation(prog,'uVP'),light:gl.getUniformLocation(prog,'uLight'),
+  sky:gl.getUniformLocation(prog,'uSky'),tex:gl.getUniformLocation(prog,'uTex'),
+  emis:gl.getUniformLocation(prog,'uEmis'),fog:gl.getUniformLocation(prog,'uFog'),
+  lp:gl.getUniformLocation(prog,'uLP[0]'),lc:gl.getUniformLocation(prog,'uLC[0]')};
+gl.enable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);gl.uniform1i(L.tex,0);gl.uniform1f(L.fog,1);
+
+/* ---------- procedural textures ---------- */
+function makeTex(drawFn){
+  const c=document.createElement('canvas');c.width=c.height=512;
+  const x=c.getContext('2d');x.scale(2,2);drawFn(x);
+  const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,c);
+  gl.generateMipmap(gl.TEXTURE_2D);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.REPEAT);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);
+  return t;
+}
+let seed=7;function rnd(){seed=(seed*16807)%2147483647;return seed/2147483647;}
+function brickTexture(hue,sat,li){return makeTex(x=>{
+  x.fillStyle=`hsl(${hue},${sat*0.4}%,${li+20}%)`;x.fillRect(0,0,256,256); // mortar
+  const rows=16,bh=16,bw=64;
+  for(let r=0;r<rows;r++){
+    const off=(r%2)*bw/2;
+    for(let i=-1;i<5;i++){
+      const dark=rnd()<0.12;
+      const l=dark?li-18:li+(rnd()-0.5)*16, s2=sat+(rnd()-0.5)*14, h2=hue+(rnd()-0.5)*16;
+      const bx=off+i*bw+1.5,by=r*bh+1.5,bwx=bw-3,bhy=bh-3;
+      x.fillStyle=`hsl(${h2},${s2}%,${l}%)`;
+      x.fillRect(bx,by,bwx,bhy);
+      // fake relief: light top edge, dark bottom edge
+      x.fillStyle=`hsla(${h2},${s2}%,${l+12}%,0.7)`;x.fillRect(bx,by,bwx,1.6);
+      x.fillStyle=`hsla(${h2},${s2}%,${l-16}%,0.75)`;x.fillRect(bx,by+bhy-1.8,bwx,1.8);
+      // weathering blotches
+      for(let k=0;k<3;k++){
+        if(rnd()<0.5)continue;
+        x.fillStyle=`hsla(${h2+(rnd()-0.5)*20},${s2}%,${l+(rnd()-0.5)*22}%,0.35)`;
+        x.fillRect(bx+rnd()*(bwx-12),by+rnd()*(bhy-4),6+rnd()*12,2+rnd()*5);
+      }
+    }
+  }
+  // fine noise
+  for(let i=0;i<700;i++){
+    x.fillStyle=`rgba(${rnd()<0.5?40:250},${rnd()<0.5?35:245},${rnd()<0.5?30:238},0.05)`;
+    x.fillRect(rnd()*256,rnd()*256,1.4,1.4);
+  }
+});}
+function woodTexture(li){return makeTex(x=>{
+  const planks=6,w=256/planks;
+  for(let p=0;p<planks;p++){
+    const l=li+(rnd()-0.5)*12,h=28+(rnd()-0.5)*10;
+    const g=x.createLinearGradient(p*w,0,p*w+w,0);
+    g.addColorStop(0,`hsl(${h},44%,${l-3}%)`);
+    g.addColorStop(0.5,`hsl(${h},42%,${l+3}%)`);
+    g.addColorStop(1,`hsl(${h},44%,${l-2}%)`);
+    x.fillStyle=g;x.fillRect(p*w,0,w,256);
+    x.strokeStyle=`hsla(${h},48%,${l-15}%,0.5)`;x.lineWidth=0.8;
+    for(let gg=0;gg<9;gg++){
+      x.beginPath();const gx=p*w+3+rnd()*(w-6);
+      x.moveTo(gx,0);
+      for(let y2=0;y2<=256;y2+=24)x.lineTo(gx+(rnd()-0.5)*5,y2);
+      x.stroke();
+    }
+    if(rnd()<0.55){ // knot
+      const kx=p*w+8+rnd()*(w-16),ky=rnd()*256;
+      x.strokeStyle=`hsla(${h},50%,${l-20}%,0.7)`;
+      for(let rr=2;rr<8;rr+=2){x.beginPath();x.ellipse(kx,ky,rr,rr*1.6,0,0,7);x.stroke();}
+    }
+    x.fillStyle='rgba(35,22,10,0.55)';x.fillRect(p*w,0,1.4,256);
+    const jy=rnd()*256;x.fillRect(p*w,jy,w,1.4);
+  }
+});}
+function plasterTexture(){return makeTex(x=>{
+  x.fillStyle='#efece2';x.fillRect(0,0,256,256);
+  for(let i=0;i<10;i++){ // soft stains
+    const gx=rnd()*256,gy=rnd()*256,gr=30+rnd()*70;
+    const g=x.createRadialGradient(gx,gy,4,gx,gy,gr);
+    const dk=rnd()<0.5;
+    g.addColorStop(0,dk?'rgba(120,112,95,0.06)':'rgba(255,255,250,0.07)');
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    x.fillStyle=g;x.fillRect(0,0,256,256);
+  }
+  for(let i=0;i<900;i++){
+    x.fillStyle=`rgba(${rnd()<0.5?90:255},${rnd()<0.5?85:250},${rnd()<0.5?75:240},0.035)`;
+    x.fillRect(rnd()*256,rnd()*256,1+rnd()*4,1+rnd()*4);
+  }
+});}
+function screedTexture(){return makeTex(x=>{
+  x.fillStyle='#b6b0a2';x.fillRect(0,0,256,256);
+  for(let i=0;i<70;i++){
+    x.fillStyle=`rgba(${70+rnd()*40},${65+rnd()*40},${55+rnd()*40},0.07)`;
+    x.beginPath();x.ellipse(rnd()*256,rnd()*256,8+rnd()*36,6+rnd()*26,rnd()*3,0,7);x.fill();
+  }
+  x.strokeStyle='rgba(255,255,248,0.05)';x.lineWidth=6;
+  for(let i=0;i<8;i++){ // trowel sweeps
+    x.beginPath();x.arc(rnd()*256,rnd()*256,30+rnd()*60,rnd()*6,rnd()*6+2);x.stroke();
+  }
+  for(let i=0;i<600;i++){
+    x.fillStyle=`rgba(${rnd()<0.5?60:240},${rnd()<0.5?58:236},${rnd()<0.5?50:228},0.05)`;
+    x.fillRect(rnd()*256,rnd()*256,1.5,1.5);
+  }
+});}
+function flatTexture(){return makeTex(x=>{x.fillStyle='#fff';x.fillRect(0,0,256,256);});}
+const TEX={
+  brick:brickTexture(16,32,50),      // warm london stock mix
+  brickDk:brickTexture(14,30,42),    // paving / plinth
+  wood:woodTexture(38),
+  woodPale:woodTexture(50),
+  plaster:plasterTexture(),
+  screed:screedTexture(),
+  flat:flatTexture()
+};
+
+/* ---------- meshes per material ---------- */
+function hex(h){return [parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255];}
+function Mesh(){this.p=[];this.n=[];this.t=[];this.c=[];}
+Mesh.prototype.quad=function(a,b,c,d,col,alpha,scale){
+  const s=scale||120;
+  const u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],v=[d[0]-a[0],d[1]-a[1],d[2]-a[2]];
+  const n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
+  const Ln=Math.hypot(n[0],n[1],n[2])||1;n[0]/=Ln;n[1]/=Ln;n[2]/=Ln;
+  const lu=Math.hypot(u[0],u[1],u[2])/s, lv=Math.hypot(v[0],v[1],v[2])/s;
+  const al=alpha===undefined?1:alpha;
+  const uv=[[0,0],[lu,0],[lu,lv],[0,0],[lu,lv],[0,lv]];
+  const pts=[a,b,c,a,c,d];
+  for(let i=0;i<6;i++){const p=pts[i];
+    this.p.push(p[0],p[1],p[2]);this.n.push(n[0],n[1],n[2]);
+    this.t.push(uv[i][0],uv[i][1]);this.c.push(col[0],col[1],col[2],al);}
+};
+Mesh.prototype.tri=function(a,b,c,col,alpha){
+  const u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],v=[c[0]-a[0],c[1]-a[1],c[2]-a[2]];
+  const n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
+  const Ln=Math.hypot(n[0],n[1],n[2])||1;n[0]/=Ln;n[1]/=Ln;n[2]/=Ln;
+  const al=alpha===undefined?1:alpha;
+  for(const p of [a,b,c]){this.p.push(p[0],p[1],p[2]);this.n.push(n[0],n[1],n[2]);
+    this.t.push(0,0);this.c.push(col[0],col[1],col[2],al);}
+};
+Mesh.prototype.line=function(a,b,col,alpha){
+  const al=alpha===undefined?1:alpha;
+  for(const p of [a,b]){this.p.push(p[0],p[1],p[2]);this.n.push(0,1,0);
+    this.t.push(0,0);this.c.push(col[0],col[1],col[2],al);}
+};
+Mesh.prototype.box=function(x,y,z,w,h,d,col,alpha,scale){
+  const a=[x,y,z],b=[x+w,y,z],c=[x+w,y,z+d],e=[x,y,z+d];
+  const A=[x,y+h,z],B=[x+w,y+h,z],C=[x+w,y+h,z+d],E=[x,y+h,z+d];
+  this.quad(A,B,C,E,col,alpha,scale);this.quad(a,e,c,b,col,alpha,scale);
+  this.quad(a,b,B,A,col,alpha,scale);this.quad(e,E,C,c,col,alpha,scale);
+  this.quad(a,A,E,e,col,alpha,scale);this.quad(b,c,C,B,col,alpha,scale);
+};
+Mesh.prototype.buffers=function(){
+  const mk=arr=>{const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);
+    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(arr),gl.STATIC_DRAW);return b;};
+  return {pb:mk(this.p),nb:mk(this.n),tb:mk(this.t),cb:mk(this.c),count:this.p.length/3};
+};
+function drawBuf(buf,tex,emis,mode){
+  if(!buf.count)return;
+  gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,tex);
+  gl.uniform1f(L.emis,emis||0);
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf.pb);gl.vertexAttribPointer(L.pos,3,gl.FLOAT,false,0,0);gl.enableVertexAttribArray(L.pos);
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf.nb);gl.vertexAttribPointer(L.nor,3,gl.FLOAT,false,0,0);gl.enableVertexAttribArray(L.nor);
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf.tb);gl.vertexAttribPointer(L.uv,2,gl.FLOAT,false,0,0);gl.enableVertexAttribArray(L.uv);
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf.cb);gl.vertexAttribPointer(L.col,4,gl.FLOAT,false,0,0);gl.enableVertexAttribArray(L.col);
+  gl.drawArrays(mode||gl.TRIANGLES,0,buf.count);
+}
+
+/* ---------- colours ---------- */
+const WHITE=hex('#ffffff'), PLASTER_T=hex('#f2ede0'), RENDER_T=hex('#cfc8b6'), CREAM=hex('#f4efe4'),
+      GREEN=hex('#2e4438'), DESK=hex('#3f4247'), WOODTOP=hex('#c09a63'), BLUE_RACK=hex('#2456b0'),
+      DARK=hex('#26282c'), RADIATOR=hex('#c08b7c'), GLASS=hex('#a8cadd'), STEEL=hex('#585d63'),
+      FRAME=hex('#2b2d30'), MURAL_D=hex('#26343c'), MURAL_Y=hex('#d9b62a'), MURAL_B=hex('#4a6fa5'),
+      MURAL_O=hex('#6d7a4e'), GROUND=hex('#9d9788'), SILVER=hex('#cfd3d6');
+const CAMCOL=['#2a78d6','#1baf7a','#eda100','#008300'].map(hex);
+const SKY=[0.84,0.88,0.92];
+
+/* ---------- material meshes ---------- */
+Mesh.prototype.quadGrad=function(a,b,c,d,c1,c2){ // a,b bottom colour c1; c,d top colour c2
+  const u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],v=[d[0]-a[0],d[1]-a[1],d[2]-a[2]];
+  const n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
+  const Ln=Math.hypot(n[0],n[1],n[2])||1;n[0]/=Ln;n[1]/=Ln;n[2]/=Ln;
+  const pts=[a,b,c,a,c,d],cols=[c1,c1,c2,c1,c2,c2];
+  for(let i=0;i<6;i++){const p=pts[i],cc=cols[i];
+    this.p.push(p[0],p[1],p[2]);this.n.push(n[0],n[1],n[2]);
+    this.t.push(0,0);this.c.push(cc[0],cc[1],cc[2],1);}
+};
+const M={brick:new Mesh(),brickDk:new Mesh(),wood:new Mesh(),plaster:new Mesh(),
+  screed:new Mesh(),misc:new Mesh(),furn:new Mesh(),emis:new Mesh(),glass:new Mesh(),
+  shad:new Mesh(),patch:new Mesh(),sky:new Mesh(),
+  wOpq:new Mesh(),wTrn:new Mesh(),wFr:new Mesh(),wLine:new Mesh()};
+// auto contact shadows under grounded furniture
+{
+  const _fb=M.furn.box.bind(M.furn);
+  M.furn.box=function(x,y,z,w,h,d,col,al,sc){
+    _fb(x,y,z,w,h,d,col,al,sc);
+    if(y<=1&&h>15)M.shad.quad([x-7,1.8,z-7],[x+w+7,1.8,z-7],[x+w+7,1.8,z+d+7],[x-7,1.8,z+d+7],[0,0,0],0.20);
+  };
+}
+// gradient sky dome
+{
+  const S2=15000,hb=-200,ht=9000;
+  const HOR=[0.90,0.93,0.96],TOP=[0.55,0.68,0.84];
+  M.sky.quadGrad([-S2,hb,-S2],[S2,hb,-S2],[S2,ht,-S2],[-S2,ht,-S2],HOR,TOP);
+  M.sky.quadGrad([S2,hb,-S2],[S2,hb,S2],[S2,ht,S2],[S2,ht,-S2],HOR,TOP);
+  M.sky.quadGrad([S2,hb,S2],[-S2,hb,S2],[-S2,ht,S2],[S2,ht,S2],HOR,TOP);
+  M.sky.quadGrad([-S2,hb,S2],[-S2,hb,-S2],[-S2,ht,-S2],[-S2,ht,S2],HOR,TOP);
+  M.sky.quad([-S2,ht,-S2],[S2,ht,-S2],[S2,ht,S2],[-S2,ht,S2],TOP,1);
+}
+const T=10;
+const ROOMS=[
+  ['OFFICE',0,0,354,315],['LAB',604,0,554,269],['CAVE',1408,0,915,460],
+  ['ENGINEERING',2573,0,1100,500],['ROBOTICS',3923,0,1340,384]
+];
+M.screed.box(-800,-12,-500,6500,12,1600,GROUND,1,300);
+
+function wallX(m,ox,oz,x0,x1,z,h0,h1,col,sc){m.box(ox+x0,h0,oz+z-T/2,x1-x0,h1-h0,T,col,1,sc||120);}
+function wallZ(m,ox,oz,x,z0,z1,h0,h1,col,sc){m.box(ox+x-T/2,h0,oz+z0,T,h1-h0,z1-z0,col,1,sc||120);}
+function glassX(ox,oz,x0,x1,z,h0,h1){M.glass.quad([ox+x0,h0,oz+z],[ox+x1,h0,oz+z],[ox+x1,h1,oz+z],[ox+x0,h1,oz+z],GLASS,.30);}
+function glassZ(ox,oz,x,z0,z1,h0,h1){M.glass.quad([ox+x,h0,oz+z0],[ox+x,h0,oz+z1],[ox+x,h1,oz+z1],[ox+x,h1,oz+z0],GLASS,.30);}
+function floorRect(m,ox,oz,x0,z0,x1,z1,col,sc){m.quad([ox+x0,0.6,oz+z0],[ox+x1,0.6,oz+z0],[ox+x1,0.6,oz+z1],[ox+x0,0.6,oz+z1],col,1,sc||120);}
+function ceilFlat(ox,oz,W,D,h){M.plaster.quad([ox,h,oz],[ox+W,h,oz],[ox+W,h,oz+D],[ox,h,oz+D],CREAM,1,200);}
+function vault(m,ox,oz,W,D,spring,crown,col){
+  const N=16;
+  for(let i=0;i<N;i++){
+    const z0=D*i/N,z1=D*(i+1)/N;
+    const y0=spring+(crown-spring)*Math.sin(Math.PI*i/N);
+    const y1=spring+(crown-spring)*Math.sin(Math.PI*(i+1)/N);
+    m.quad([ox,y0,oz+z0],[ox+W,y0,oz+z0],[ox+W,y1,oz+z1],[ox,y1,oz+z1],col,1,140);
+  }
+}
+function deskUnit(ox,oz,x,z,w,d,h,topCol){ // top slab + 4 legs
+  M.furn.box(ox+x,h-4,oz+z,w,4,d,topCol);
+  for(const [lx,lz] of [[3,3],[w-8,3],[3,d-8],[w-8,d-8]])
+    M.furn.box(ox+x+lx,0,oz+z+lz,5,h-4,5,FRAME);
+}
+function chair(ox,oz,x,z){
+  M.furn.box(ox+x-22,44,oz+z-22,44,5,44,DARK);
+  M.furn.box(ox+x-3,8,oz+z-3,6,36,6,STEEL);
+  M.furn.box(ox+x-22,49,oz+z+16,44,44,6,DARK);
+  M.furn.box(ox+x-25,2,oz+z-25,50,4,50,STEEL);
+}
+function rack(ox,oz,x,z,w,d,h,col,nsh){
+  for(const [lx,lz] of [[0,0],[w-5,0],[0,d-5],[w-5,d-5]])
+    M.furn.box(ox+x+lx,0,oz+z+lz,5,h,5,col);
+  for(let i=0;i<=nsh;i++)
+    M.furn.box(ox+x,(h-8)*i/nsh,oz+z,w,4,d,hex('#d8d2c2'));
+}
+function mullionsX(ox,oz,x0,x1,z,h0,h1,nx,ny){ // frame grid on X-aligned glass
+  M.misc.box(ox+x0-3,h0,oz+z-4,x1-x0+6,4,8,FRAME);
+  M.misc.box(ox+x0-3,h1-4,oz+z-4,x1-x0+6,4,8,FRAME);
+  for(let i=0;i<=nx;i++)M.misc.box(ox+x0+(x1-x0)*i/nx-2,h0,oz+z-4,4,h1-h0,8,FRAME);
+  for(let j=1;j<ny;j++)M.misc.box(ox+x0,h0+(h1-h0)*j/ny-2,oz+z-4,x1-x0,4,8,FRAME);
+}
+function mullionsZ(ox,oz,x,z0,z1,h0,h1,nx,ny){
+  M.misc.box(ox+x-4,h0,oz+z0-3,8,4,z1-z0+6,FRAME);
+  M.misc.box(ox+x-4,h1-4,oz+z0-3,8,4,z1-z0+6,FRAME);
+  for(let i=0;i<=nx;i++)M.misc.box(ox+x-4,h0,oz+z0+(z1-z0)*i/nx-2,8,h1-h0,4,FRAME);
+  for(let j=1;j<ny;j++)M.misc.box(ox+x-4,h0+(h1-h0)*j/ny-2,oz+z0,8,4,z1-z0,FRAME);
+}
+
+/* ---- OFFICE ---- */
+(function(){
+  const [_,ox,oz,W,D]=ROOMS[0];
+  floorRect(M.wood,ox,oz,0,0,W,D,WHITE);
+  ceilFlat(ox,oz,W,D,280);
+  wallX(M.brick,ox,oz,0,W,0,0,280,WHITE);
+  wallZ(M.plaster,ox,oz,W,0,D,0,280,PLASTER_T);
+  wallZ(M.plaster,ox,oz,0,0,D,0,280,RENDER_T);
+  wallX(M.plaster,ox,oz,0,30,D,0,280,PLASTER_T);
+  wallX(M.plaster,ox,oz,200,W,D,0,280,PLASTER_T);
+  wallX(M.plaster,ox,oz,30,200,D,210,280,PLASTER_T);
+  glassX(ox,oz,30,200,D,0,210);
+  mullionsX(ox,oz,30,200,D,0,210,2,2);
+  M.furn.quad([ox+70,120,oz+T/2+1],[ox+220,120,oz+T/2+1],[ox+220,220,oz+T/2+1],[ox+70,220,oz+T/2+1],WHITE);
+  M.furn.box(ox+66,116,oz+T/2,4,108,2,STEEL);M.furn.box(ox+220,116,oz+T/2,4,108,2,STEEL);
+  deskUnit(ox,oz,0,60,80,160,74,WOODTOP);
+  chair(ox,oz,112,140);
+  M.furn.box(ox+230,0,oz+15,70,20,40,DARK);          // TV stand base
+  M.furn.box(ox+261,20,oz+30,8,100,8,FRAME);
+  M.furn.box(ox+212,95,oz+26,108,62,6,DARK);         // TV screen
+  M.furn.box(ox+296,0,oz+222,50,42,52,DARK);         // armchair seat
+  M.furn.box(ox+296,42,oz+264,50,40,10,DARK);
+  M.furn.box(ox+306,0,oz+20,32,70,32,DARK);
+  M.misc.box(ox+240,0,oz+4,90,58,10,RADIATOR);
+})();
+
+/* ---- LAB ---- */
+(function(){
+  const [_,ox,oz,W,D]=ROOMS[1];
+  floorRect(M.wood,ox,oz,0,0,W,D,WHITE);
+  ceilFlat(ox,oz,W,D,290);
+  wallX(M.brick,ox,oz,0,W,0,0,290,WHITE);
+  M.brickDk.box(ox,0,oz,W,65,26,WHITE,1,90);         // plinth
+  M.misc.box(ox,64,oz+26,W,3,4,STEEL);               // trench cover edge
+  wallX(M.plaster,ox,oz,0,W,D,0,290,PLASTER_T);
+  wallZ(M.plaster,ox,oz,W,0,D,0,290,PLASTER_T);
+  wallZ(M.plaster,ox,oz,0,0,170,0,290,PLASTER_T);
+  wallZ(M.plaster,ox,oz,0,170,D,240,290,PLASTER_T);
+  glassZ(ox,oz,0,170,D,0,240);
+  mullionsZ(ox,oz,0,170,D,0,240,1,1);
+  const mx=ox+T/2+1;
+  M.misc.quad([mx,0,oz+30],[mx,0,oz+120],[mx,200,oz+120],[mx,200,oz+30],MURAL_D);
+  M.misc.quad([mx,0,oz+118],[mx,0,oz+160],[mx,90,oz+160],[mx,90,oz+118],MURAL_Y);
+  M.misc.quad([mx,140,oz+8],[mx,140,oz+60],[mx,210,oz+60],[mx,210,oz+8],MURAL_B);
+  M.misc.quad([mx,60,oz+4],[mx,60,oz+34],[mx,130,oz+34],[mx,130,oz+4],MURAL_O);
+  for(const [a,b] of [[40,210],[280,450]]){          // blind arch recesses (inset panels)
+    const N=8,sp=185,cr=235,zi=oz+T/2+1.5;
+    M.brickDk.quad([ox+a,65,zi],[ox+b,65,zi],[ox+b,sp,zi],[ox+a,sp,zi],WHITE,1,90);
+    for(let i=0;i<N;i++){
+      const t0=i/N,t1=(i+1)/N;
+      const x0=a+(b-a)*t0,x1=a+(b-a)*t1;
+      const y0=sp+(cr-sp)*Math.sin(Math.PI*t0),y1=sp+(cr-sp)*Math.sin(Math.PI*t1);
+      M.brickDk.quad([ox+x0,sp,zi],[ox+x1,sp,zi],[ox+x1,y1,zi],[ox+x0,y0,zi],WHITE,1,90);
+    }
+  }
+  M.misc.box(ox+70,0,oz+28,100,58,10,RADIATOR);
+  M.misc.box(ox+455,0,oz+28,90,58,10,RADIATOR);
+  M.furn.box(ox+213,65,oz+8,16,10,12,DARK);          // router on plinth
+  deskUnit(ox,oz,80,48,360,105,74,DESK);
+  M.furn.box(ox+350,74,oz+70,20,20,22,SILVER);
+  for(const cx of [160,280,390])chair(ox,oz,cx,192);
+  for(const a of [140,330]){
+    M.emis.box(ox+a,250,oz+75,120,6,120,WHITE);
+    M.misc.box(ox+a+56,256,oz+131,8,34,8,STEEL);
+  }
+})();
+
+/* ---- CAVE ---- */
+(function(){
+  const [_,ox,oz,W,D]=ROOMS[2];
+  floorRect(M.wood,ox,oz,0,0,W,D,WHITE);
+  vault(M.plaster,ox,oz,W,D,235,290,CREAM);
+  wallX(M.brick,ox,oz,0,W,0,0,235,WHITE);
+  wallX(M.brick,ox,oz,0,W,D,0,235,WHITE);
+  wallZ(M.misc,ox,oz,0,100,380,0,290,GREEN);
+  wallZ(M.plaster,ox,oz,W,0,340,0,290,PLASTER_T);
+  wallZ(M.plaster,ox,oz,W,440,D,0,290,PLASTER_T);
+  wallZ(M.plaster,ox,oz,W,340,440,210,290,PLASTER_T);
+  M.misc.box(ox+W-T/2-2,0,oz+338,6,212,4,FRAME);     // door frame
+  M.misc.box(ox+W-T/2-2,0,oz+438,6,212,4,FRAME);
+  // LED cove strips at springing
+  M.emis.box(ox+10,228,oz+16,W-20,4,6,WHITE);
+  M.emis.box(ox+10,228,oz+D-22,W-20,4,6,WHITE);
+  rack(ox,oz,60,4,90,45,180,BLUE_RACK,4);
+  rack(ox,oz,270,4,90,45,180,BLUE_RACK,4);
+  deskUnit(ox,oz,0,60,80,160,74,DESK);chair(ox,oz,112,140);
+  deskUnit(ox,oz,140,390,160,70,74,DESK);chair(ox,oz,222,352);
+  deskUnit(ox,oz,660,385,180,75,74,DESK);chair(ox,oz,748,348);
+  M.furn.box(ox+500,0,oz+90,180,74,75,DARK);
+  M.furn.box(ox+700,0,oz+110,160,74,75,DARK);
+  M.furn.box(ox+455,70,oz+215,90,6,90,WOODTOP);      // round table top (massed)
+  M.furn.box(ox+490,0,oz+250,20,70,20,MURAL_Y);
+  M.furn.box(ox+835,0,oz+230,80,200,120,DARK);
+  M.furn.box(ox+870,0,oz+20,45,75,200,FRAME);
+  M.furn.box(ox+170,0,oz+110,40,110,40,WHITE);
+  for(const a of [250,495]){
+    M.emis.box(ox+a,252,oz+215,235,6,28,WHITE);
+    M.misc.box(ox+a+20,258,oz+226,4,32,4,FRAME);
+    M.misc.box(ox+a+210,258,oz+226,4,32,4,FRAME);
+  }
+})();
+
+/* ---- ENGINEERING ---- */
+(function(){
+  const [_,ox,oz,W,D]=ROOMS[3];
+  floorRect(M.screed,ox,oz,0,0,W,D,WHITE);
+  floorRect(M.brickDk,ox,oz,1000,0,W,D,WHITE,90);
+  floorRect(M.brickDk,ox,oz,250,0,1000,80,WHITE,90);
+  for(let b=0;b<5;b++){
+    const x0=b*220,N=8;
+    for(let i=0;i<N;i++){
+      const t0=i/N,t1=(i+1)/N;
+      const y0=280+25*Math.sin(Math.PI*t0),y1=280+25*Math.sin(Math.PI*t1);
+      M.brick.quad([ox+x0+220*t0,y0,oz],[ox+x0+220*t1,y1,oz],[ox+x0+220*t1,y1,oz+D],[ox+x0+220*t0,y0,oz+D],WHITE,1,110);
+    }
+  }
+  for(const bx of [0,220,440,660,880,1100])M.misc.box(ox+bx-9,253,oz,18,27,D,FRAME);
+  for(const [a,b] of [[0,380],[580,680],[880,W]])wallX(M.brick,ox,oz,a,b,0,0,280,WHITE);
+  for(const [a,b] of [[380,580],[680,880]]){
+    wallX(M.brick,ox,oz,a,b,0,0,95,WHITE);
+    wallX(M.brick,ox,oz,a,b,0,265,280,WHITE);
+    glassX(ox,oz,a,b,0,95,265);
+    mullionsX(ox,oz,a,b,0,95,265,4,3);
+    M.misc.box(ox+a+10,0,oz+4,160,58,10,RADIATOR);
+  }
+  wallX(M.plaster,ox,oz,0,W,D,0,280,RENDER_T);
+  wallZ(M.plaster,ox,oz,0,0,D,240,280,PLASTER_T);
+  glassZ(ox,oz,0,0,D,0,240);mullionsZ(ox,oz,0,0,D,0,240,4,2);
+  wallZ(M.plaster,ox,oz,W,0,280,240,280,PLASTER_T);
+  glassZ(ox,oz,W,0,280,0,240);mullionsZ(ox,oz,W,0,280,0,240,2,2);
+  glassZ(ox,oz,W,380,D,0,240);mullionsZ(ox,oz,W,380,D,0,240,1,2);
+  wallZ(M.plaster,ox,oz,W,380,D,240,280,PLASTER_T);
+  // assembly bench train: black frames + tops
+  for(const bx of [300,490,680]){
+    for(const [lx,lz] of [[0,0],[165,0],[0,85],[165,85]])
+      M.furn.box(ox+bx+lx,0,oz+205+lz,6,90,6,FRAME);
+    M.furn.box(ox+bx,86,oz+205,172,5,90,hex('#5a4632'));
+    M.furn.box(ox+bx+20,91,oz+220,132,110,4,FRAME);  // gantry hoop
+    M.furn.box(ox+bx+20,197,oz+220,132,4,60,FRAME);
+  }
+  deskUnit(ox,oz,870,120,160,80,74,WOODTOP);
+  deskUnit(ox,oz,880,320,150,75,74,WOODTOP);
+  rack(ox,oz,20,250,45,90,170,BLUE_RACK,4);
+  rack(ox,oz,20,350,45,90,170,BLUE_RACK,4);
+  M.furn.box(ox+150,0,oz+400,120,80,60,STEEL);
+  M.furn.box(ox+185,80,oz+415,50,30,30,hex('#1f8f8f')); // chop saw
+  M.misc.box(ox+20,244,oz+468,1060,12,14,SILVER);       // truss
+  M.emis.box(ox+20,240,oz+490,1060,3,4,WHITE);          // LED strip
+})();
+
+/* ---- ROBOTICS ---- */
+(function(){
+  const [_,ox,oz,W,D]=ROOMS[4];
+  floorRect(M.screed,ox,oz,0,0,W,D,WHITE);
+  floorRect(M.brickDk,ox,oz,1050,0,W,D,WHITE,90);
+  vault(M.brick,ox,oz,W,D,240,305,WHITE);
+  wallX(M.plaster,ox,oz,0,W,0,0,240,PLASTER_T);
+  wallX(M.plaster,ox,oz,0,W,D,0,240,RENDER_T);
+  wallZ(M.misc,ox,oz,0,0,D,210,305,FRAME);
+  glassZ(ox,oz,0,0,D,0,210);mullionsZ(ox,oz,0,0,D,0,210,4,2);
+  wallZ(M.plaster,ox,oz,W,0,20,0,305,PLASTER_T);
+  wallZ(M.plaster,ox,oz,W,110,D,0,305,PLASTER_T);
+  wallZ(M.plaster,ox,oz,W,20,110,210,305,PLASTER_T);
+  M.furn.quad([ox+180,80,oz+T/2+1],[ox+400,80,oz+T/2+1],[ox+400,200,oz+T/2+1],[ox+180,200,oz+T/2+1],WHITE);
+  deskUnit(ox,oz,140,12,610,80,74,DESK);
+  chair(ox,oz,240,140);chair(ox,oz,450,140);chair(ox,oz,650,140);
+  for(const rx of [770,950]){
+    rack(ox,oz,rx,12,160,40,120,FRAME,3);
+  }
+  for(const a of [100,260,420,580,740,900]){
+    M.emis.box(ox+a,120,oz+D-14,110,65,6,WHITE);
+    M.misc.box(ox+a-3,117,oz+D-15,3,71,8,FRAME);
+    M.misc.box(ox+a+110,117,oz+D-15,3,71,8,FRAME);
+  }
+  // robot on mobile gantry: frame posts + top beam + hoist + robot
+  for(const [lx,lz] of [[0,0],[112,0],[0,92],[112,92]])
+    M.furn.box(ox+980+lx,0,oz+140+lz,8,210,8,FRAME);
+  M.furn.box(ox+980,206,oz+140,120,6,100,FRAME);
+  M.furn.box(ox+1034,150,oz+184,10,58,10,MURAL_Y);   // hoist strap
+  M.furn.box(ox+1018,88,oz+172,44,66,26,SILVER);     // torso
+  M.furn.box(ox+1028,154,oz+178,24,20,18,SILVER);    // head
+  M.furn.box(ox+1012,60,oz+176,12,60,14,STEEL);      // legs
+  M.furn.box(ox+1056,60,oz+176,12,60,14,STEEL);
+  deskUnit(ox,oz,880,265,140,70,74,WHITE);
+  for(const px2 of [1120,1200]){
+    M.furn.box(ox+px2,0,oz+50,70,70,60,FRAME);
+    M.furn.box(ox+px2+8,70,oz+58,54,54,44,SILVER);   // printer
+  }
+  M.furn.box(ox+1230,0,oz+150,90,120,110,DARK);
+  M.furn.box(ox+1245,120,oz+165,60,30,80,hex('#141414')); // flight case
+  M.misc.box(ox+1150,0,oz+368,120,58,10,RADIATOR);
+})();
+
+/* ---------- interior lights + window sun patches ---------- */
+{
+  const LIGHTS=[];
+  const AL=(x,y,z,r,cr,cg,cb2)=>LIGHTS.push({p:[x,y,z,r],c:[cr,cg,cb2,0]});
+  AL(177,262,157,420,.55,.52,.46);                       // office luminaire zone
+  AL(604+200,256,135,420,.62,.60,.54);AL(604+390,256,135,420,.62,.60,.54); // lab LED panels
+  AL(1408+367,256,229,520,.60,.57,.50);AL(1408+612,256,229,520,.60,.57,.50); // cave luminaires
+  AL(2573+220,252,465,520,.50,.50,.48);AL(2573+550,252,465,520,.50,.50,.48);AL(2573+880,252,465,520,.50,.50,.48); // eng LED strip
+  AL(2573+480,200,35,540,.46,.52,.62);AL(2573+780,200,35,540,.46,.52,.62); // eng window daylight
+  AL(3923+270,165,355,460,.55,.53,.48);AL(3923+640,165,355,460,.55,.53,.48);AL(3923+1000,165,355,460,.55,.53,.48); // robotics lightboxes
+  AL(3923+45,190,192,580,.48,.55,.66);                   // robotics west window
+  const lp=new Float32Array(64),lc=new Float32Array(64);
+  LIGHTS.forEach((li,i)=>{lp.set(li.p,i*4);lc.set(li.c,i*4);});
+  for(let i=LIGHTS.length;i<16;i++)lp[i*4+3]=1;
+  gl.uniform4fv(L.lp,lp);gl.uniform4fv(L.lc,lc);
+}
+// sun patches thrown on the floor by windows
+for(const [a,b] of [[380,580],[680,880]])
+  M.patch.quad([2573+a+30,1.9,14],[2573+b+30,1.9,14],[2573+b+95,1.9,150],[2573+a+95,1.9,150],WHITE,.15);
+M.patch.quad([3923+14,1.9,60],[3923+150,1.9,95],[3923+150,1.9,300],[3923+14,1.9,330],WHITE,.13);
+
+/* ---------- camera system (editable; layout persists in this browser) ---------- */
+const CAMHEX=['#2a78d6','#1baf7a','#eda100','#008300'];
+const TYPES={
+  usb:{label:'USB 112°',fov:112,vf:78,r:280,tilt:35},
+  hq6:{label:'HQ 6mm 55°',fov:55,vf:43,r:550,tilt:22},
+  hq16:{label:'HQ 16mm 22°',fov:22,vf:17,r:1340,tilt:8}
+};
+const DEFAULT_CAMS=[
+  {code:'C1',ri:0,x:12,y:12,dir:45,type:'usb',ci:0},
+  {code:'C2',ri:0,x:342,y:303,dir:225,type:'usb',ci:1},
+  {code:'C3',ri:2,x:8,y:235,dir:0,type:'hq6',ci:0},
+  {code:'C4',ri:2,x:907,y:230,dir:180,type:'hq6',ci:1},
+  {code:'C5',ri:2,x:600,y:8,dir:90,type:'usb',ci:2},
+  {code:'C6',ri:1,x:546,y:135,dir:180,type:'hq6',ci:0},
+  {code:'C7',ri:1,x:8,y:85,dir:0,type:'hq6',ci:1},
+  {code:'C8',ri:1,x:300,y:6,dir:90,type:'usb',ci:2},
+  {code:'C9',ri:3,x:180,y:492,dir:270,type:'hq6',ci:0},
+  {code:'C10',ri:3,x:550,y:492,dir:270,type:'hq6',ci:1},
+  {code:'C11',ri:3,x:920,y:492,dir:270,type:'hq6',ci:2},
+  {code:'C12',ri:3,x:575,y:8,dir:90,type:'usb',ci:3},
+  {code:'C13',ri:4,x:220,y:376,dir:270,type:'hq6',ci:0},
+  {code:'C14',ri:4,x:670,y:376,dir:270,type:'hq6',ci:1},
+  {code:'C15',ri:4,x:1120,y:376,dir:270,type:'hq6',ci:2},
+  {code:'C16',ri:4,x:1332,y:192,dir:180,type:'hq16',ci:3}
+];
+function rayRect(px,py,dx,dy,W,D){
+  let t=1e9;
+  if(dx>1e-6)t=Math.min(t,(W-px)/dx);else if(dx<-1e-6)t=Math.min(t,-px/dx);
+  if(dy>1e-6)t=Math.min(t,(D-py)/dy);else if(dy<-1e-6)t=Math.min(t,-py/dy);
+  return Math.max(t,0);
+}
+let CAMOBJS=[],selCode=null;
+function buildCam(c){
+  const sel=c.code===selCode;
+  const [rn,ox,oz,W,D]=ROOMS[c.ri];
+  c.room=rn;
+  const tp=TYPES[c.type],col=hex(c.colHex);
+  const fov=tp.fov,r=tp.r,vf=tp.vf,tilt=(c.tilt!==undefined?c.tilt:tp.tilt);
+  const mo=new Mesh(),mt=new Mesh(),mf=new Mesh(),ml=new Mesh();
+  mo.box(ox+c.x-3,0,oz+c.y-3,6,238,6,col);
+  mo.box(ox+c.x-8,232,oz+c.y-8,16,12,16,DARK);
+  if(sel)mo.box(ox+c.x-11,246,oz+c.y-11,22,7,22,hex('#ffffff'));
+  const fa=sel?0.12:0.06,fr=sel?0.20:0.10;
+  const steps=26,a0=(c.dir-fov/2)*Math.PI/180,a1=(c.dir+fov/2)*Math.PI/180;
+  for(let i=0;i<steps;i++){
+    const b0=a0+(a1-a0)*i/steps,b1=a0+(a1-a0)*(i+1)/steps;
+    const r0=Math.min(r,rayRect(c.x,c.y,Math.cos(b0),Math.sin(b0),W,D));
+    const r1=Math.min(r,rayRect(c.x,c.y,Math.cos(b1),Math.sin(b1),W,D));
+    mt.tri([ox+c.x,2.8,oz+c.y],
+      [ox+c.x+r0*Math.cos(b0),2.8,oz+c.y+r0*Math.sin(b0)],
+      [ox+c.x+r1*Math.cos(b1),2.8,oz+c.y+r1*Math.sin(b1)],col,fa);
+  }
+  const d2=c.dir*Math.PI/180,cd=Math.cos(d2),sd=Math.sin(d2),tr=tilt*Math.PI/180;
+  const ax=[cd*Math.cos(tr),-Math.sin(tr),sd*Math.cos(tr)];
+  const rv=[-sd,0,cd];
+  const up=[cd*Math.sin(tr),Math.cos(tr),sd*Math.sin(tr)];
+  const tH=Math.tan(fov/2*Math.PI/180),tV=Math.tan(vf/2*Math.PI/180);
+  const P=[ox+c.x,238,oz+c.y];
+  const corners=[];
+  for(const [sx,sy] of [[-1,1],[1,1],[1,-1],[-1,-1]]){
+    const v=[ax[0]+rv[0]*tH*sx+up[0]*tV*sy,
+             ax[1]+rv[1]*tH*sx+up[1]*tV*sy,
+             ax[2]+rv[2]*tH*sx+up[2]*tV*sy];
+    let Lc=r;
+    if(v[1]<-1e-4)Lc=Math.min(Lc,-238/v[1]);
+    corners.push([P[0]+v[0]*Lc,P[1]+v[1]*Lc,P[2]+v[2]*Lc]);
+  }
+  for(let i=0;i<4;i++){
+    const c0=corners[i],c1=corners[(i+1)%4];
+    mf.tri(P,c0,c1,col,fr);
+    ml.line(P,c0,col,.9);
+    ml.line(c0,c1,col,.9);
+  }
+  mf.tri(corners[0],corners[1],corners[2],col,fr);
+  mf.tri(corners[0],corners[2],corners[3],col,fr);
+  // true ground footprint of the frustum: outline + fill
+  const fp=corners.map(q=>[q[0],3.0,q[2]]);
+  for(let i=0;i<4;i++)ml.line(fp[i],fp[(i+1)%4],col,.95);
+  mt.tri(fp[0],fp[1],fp[2],col,sel?0.30:0.20);
+  mt.tri(fp[0],fp[2],fp[3],col,sel?0.30:0.20);
+  // optical axis + target disc where the lens centre lands
+  const hd=(ax[1]<-1e-4)?Math.min(r,-238/ax[1]):r;
+  const he=Math.max(3.2,238+ax[1]*hd);
+  const hp=[P[0]+ax[0]*hd,3.2,P[2]+ax[2]*hd];
+  ml.line(P,[hp[0],he,hp[2]],col,1);
+  for(let i=0;i<12;i++){
+    const t0=i/12*Math.PI*2,t1=(i+1)/12*Math.PI*2;
+    mt.tri(hp,
+      [hp[0]+14*Math.cos(t0),3.2,hp[2]+14*Math.sin(t0)],
+      [hp[0]+14*Math.cos(t1),3.2,hp[2]+14*Math.sin(t1)],col,sel?0.65:0.45);
+  }
+  c.bo=mo.buffers();c.bt=mt.buffers();c.bf=mf.buffers();c.bl=ml.buffers();
+}
+function serializeCams(){return CAMOBJS.map(({code,ri,x,y,dir,type,ci,on,tilt})=>({code,ri,x,y,dir,type,ci,on,tilt}));}
+function saveCams(){
+  try{localStorage.setItem('camLayout-v2',JSON.stringify(serializeCams()));}catch(e){}
+  try{window.dispatchEvent(new CustomEvent('camlayout'));}catch(e){}
+}
+function initCams(list){
+  CAMOBJS=list.map(o=>Object.assign({},o,{colHex:CAMHEX[(o.ci||0)%4],on:o.on!==false}));
+  for(const c of CAMOBJS)buildCam(c);
+}
+let storedLayout=null;
+try{storedLayout=JSON.parse(localStorage.getItem('camLayout-v2'));}catch(e){}
+initCams(Array.isArray(storedLayout)&&storedLayout.length?storedLayout:DEFAULT_CAMS);
+
+const B={};
+for(const k in M)B[k]=M[k].buffers();
+const OPAQUE=[['brick','brick'],['brickDk','brickDk'],['wood','wood'],
+  ['plaster','plaster'],['screed','screed'],['misc','flat']];
+
+/* ---------- controls + loop ---------- */
+let pos={x:177,y:160,z:200},yaw=0,pitch=0;
+const keys={};
+addEventListener('keydown',e=>{if(document.body.classList.contains('viewer3d'))keys[e.key.toLowerCase()]=true;});
+addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
+let drag=null,downPt=null;
+function pickFloor(cx,cy){
+  const asp=cvs.width/cvs.height,tf=Math.tan(1.15/2);
+  const nx=(cx/innerWidth*2-1)*tf*asp,ny=(1-cy/innerHeight*2)*tf;
+  const cp=Math.cos(pitch),sp=Math.sin(pitch),cyw=Math.cos(yaw),syw=Math.sin(yaw);
+  const y1=cp*ny+sp,z1=sp*ny-cp;
+  const dx=cyw*nx+syw*z1,dy=y1,dz=-syw*nx+cyw*z1;
+  if(dy>=-1e-4)return null;
+  const tt=-pos.y/dy;
+  return [pos.x+dx*tt,pos.z+dz*tt];
+}
+cvs.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};downPt={x:e.clientX,y:e.clientY};cvs.classList.add('dragging');cvs.setPointerCapture(e.pointerId);});
+cvs.addEventListener('pointermove',e=>{
+  if(!drag)return;
+  yaw-=(e.clientX-drag.x)*0.0032;
+  pitch-=(e.clientY-drag.y)*0.0032;
+  pitch=Math.max(-1.35,Math.min(1.35,pitch));
+  drag={x:e.clientX,y:e.clientY};
+});
+cvs.addEventListener('pointerup',e=>{
+  cvs.classList.remove('dragging');
+  const wasClick=downPt&&Math.hypot(e.clientX-downPt.x,e.clientY-downPt.y)<6;
+  drag=null;downPt=null;
+  if(!wasClick||mode==='walk')return;
+  const sc=CAMOBJS.find(cc=>cc.code===selCode);
+  if(!sc)return;
+  const hit=pickFloor(e.clientX,e.clientY);
+  if(!hit)return;
+  if(mode==='move'){
+    for(let ri=0;ri<ROOMS.length;ri++){
+      const [n2,ox,oz,W,D]=ROOMS[ri];
+      if(hit[0]>=ox&&hit[0]<=ox+W&&hit[1]>=oz&&hit[1]<=oz+D){
+        sc.ri=ri;
+        sc.x=Math.round(Math.min(W-5,Math.max(5,hit[0]-ox)));
+        sc.y=Math.round(Math.min(D-5,Math.max(5,hit[1]-oz)));
+        buildCam(sc);saveCams();renderPanel();return;
+      }
+    }
+  }else if(mode==='aim'){
+    const [n2,ox,oz]=ROOMS[sc.ri];
+    const wx=ox+sc.x,wz=oz+sc.y;
+    const ddx=hit[0]-wx,ddz=hit[1]-wz,dist=Math.hypot(ddx,ddz);
+    if(dist<20)return;
+    sc.dir=Math.round((Math.atan2(ddz,ddx)*180/Math.PI+360)%360);
+    sc.tilt=Math.round(Math.max(4,Math.min(60,Math.atan2(238,dist)*180/Math.PI)));
+    buildCam(sc);saveCams();renderPanel();
+  }
+});
+const padState={f:false,b:false,l:false,r:false};
+for(const b of document.querySelectorAll('.pad button')){
+  const k=b.dataset.mv;
+  b.addEventListener('pointerdown',e=>{e.preventDefault();padState[k]=true;});
+  b.addEventListener('pointerup',()=>{padState[k]=false;});
+  b.addEventListener('pointerleave',()=>{padState[k]=false;});
+}
+let showCams=true;
+const bar=document.getElementById('bar');
+const spots=[[177,200,0],[880,140,Math.PI/2],[1860,230,-Math.PI/2],[3120,250,-Math.PI/2],[4590,190,-Math.PI/2]];
+ROOMS.forEach((r,i)=>{
+  const b=document.createElement('button');b.textContent=r[0];
+  b.onclick=()=>{pos.x=spots[i][0];pos.z=spots[i][1];yaw=spots[i][2];pitch=0;};
+  bar.appendChild(b);
+});
+const tb=document.createElement('button');tb.textContent='Camera coverage';tb.className='on';
+tb.onclick=()=>{showCams=!showCams;tb.classList.toggle('on',showCams);};
+bar.appendChild(tb);
+let showFurn=true;
+const fb=document.createElement('button');fb.textContent='Furniture';fb.className='on';
+fb.onclick=()=>{showFurn=!showFurn;fb.classList.toggle('on',showFurn);};
+bar.appendChild(fb);
+// camera panel: per-room groups + live editor
+const panel=document.createElement('div');panel.className='cams';
+document.getElementById('view3d').appendChild(panel);
+let mode='walk';
+function setMode(m){mode=m;cvs.style.cursor=(m==='walk')?'grab':'crosshair';renderPanel();}
+function nextCode(){let n=1;while(CAMOBJS.some(c=>c.code==='C'+n))n++;return 'C'+n;}
+function renderPanel(){
+  panel.innerHTML='';
+  const ct=document.createElement('div');ct.className='ct';ct.textContent='Cameras · click to show/hide';
+  panel.appendChild(ct);
+  ROOMS.forEach((R,ri)=>{
+    const group=CAMOBJS.filter(c=>c.ri===ri);
+    if(!group.length)return;
+    const rh=document.createElement('button');rh.className='rh';
+    rh.textContent=R[0]+' ▸ toggle all';
+    rh.onclick=()=>{const t2=!group.every(c=>c.on);for(const c of group)c.on=t2;saveCams();renderPanel();};
+    panel.appendChild(rh);
+    const rw=document.createElement('div');rw.className='rw';
+    for(const c of group){
+      const b=document.createElement('button');
+      b.textContent=c.code;
+      b.title=TYPES[c.type].label;
+      b.style.borderColor=c.colHex;
+      b.style.background=c.on?c.colHex+'55':'transparent';
+      b.style.opacity=c.on?'1':'.45';
+      if(c.code===selCode)b.style.outline='2px solid var(--edge)';
+      b.onclick=()=>{c.on=!c.on;saveCams();renderPanel();};
+      rw.appendChild(b);
+    }
+    panel.appendChild(rw);
+  });
+  const eh=document.createElement('div');eh.className='rh2';eh.textContent='EDIT';
+  panel.appendChild(eh);
+  const selRow=document.createElement('select');
+  const o0=document.createElement('option');o0.value='';o0.textContent='select a camera to edit…';
+  selRow.appendChild(o0);
+  for(const c of CAMOBJS){
+    const o=document.createElement('option');o.value=c.code;
+    o.textContent=`${c.code} · ${TYPES[c.type].label} · ${c.room}`;
+    if(c.code===selCode)o.selected=true;
+    selRow.appendChild(o);
+  }
+  selRow.onchange=()=>{
+    const old=selCode;selCode=selRow.value||null;
+    for(const c of CAMOBJS)if(c.code===old||c.code===selCode)buildCam(c);
+    if(!selCode)setMode('walk');else renderPanel();
+  };
+  panel.appendChild(selRow);
+  const row=(...btns)=>{const d=document.createElement('div');d.className='rw';
+    for(const b of btns)d.appendChild(b);panel.appendChild(d);};
+  const mk=(txt,fn,active)=>{const b=document.createElement('button');b.textContent=txt;
+    b.style.borderColor='var(--edge)';
+    if(active){b.style.background='var(--edge)';b.style.color='var(--paper)';}
+    b.onclick=fn;return b;};
+  const sc=CAMOBJS.find(cc=>cc.code===selCode);
+  if(sc){
+    row(mk('Move → click floor',()=>setMode(mode==='move'?'walk':'move'),mode==='move'),
+        mk('Aim → click floor',()=>setMode(mode==='aim'?'walk':'aim'),mode==='aim'));
+    row(mk('USB',()=>{sc.type='usb';delete sc.tilt;buildCam(sc);saveCams();renderPanel();},sc.type==='usb'),
+        mk('HQ 6mm',()=>{sc.type='hq6';delete sc.tilt;buildCam(sc);saveCams();renderPanel();},sc.type==='hq6'),
+        mk('HQ 16mm',()=>{sc.type='hq16';delete sc.tilt;buildCam(sc);saveCams();renderPanel();},sc.type==='hq16'));
+    row(mk('⟲ 15°',()=>{sc.dir=(sc.dir+345)%360;buildCam(sc);saveCams();},false),
+        mk('⟳ 15°',()=>{sc.dir=(sc.dir+15)%360;buildCam(sc);saveCams();},false),
+        mk('Delete',()=>{CAMOBJS=CAMOBJS.filter(x2=>x2!==sc);selCode=null;setMode('walk');saveCams();renderPanel();},false));
+  }
+  row(mk('+ Add camera where I stand',()=>{
+    for(let ri=0;ri<ROOMS.length;ri++){
+      const [n2,ox,oz,W,D]=ROOMS[ri];
+      if(pos.x>ox&&pos.x<ox+W&&pos.z>oz&&pos.z<oz+D){
+        const dirDeg=Math.round((Math.atan2(-Math.cos(yaw),-Math.sin(yaw))*180/Math.PI+360)%360);
+        const ci=CAMOBJS.filter(q=>q.ri===ri).length%4;
+        const nc={code:nextCode(),ri,x:Math.round(pos.x-ox),y:Math.round(pos.z-oz),
+          dir:dirDeg,type:'hq6',ci,colHex:CAMHEX[ci],on:true};
+        CAMOBJS.push(nc);selCode=nc.code;buildCam(nc);saveCams();renderPanel();return;
+      }
+    }
+    alert('Stand inside a room, then add.');},false));
+  row(mk('Export layout',()=>{
+      const j=JSON.stringify(serializeCams(),null,1);
+      if(navigator.clipboard)navigator.clipboard.writeText(j).catch(()=>{});
+      prompt('Camera layout JSON (also copied to clipboard):',j);},false),
+      mk('Reset to plan',()=>{
+      try{localStorage.removeItem('camLayout-v2');}catch(e){}
+      selCode=null;setMode('walk');initCams(DEFAULT_CAMS);renderPanel();
+      try{window.dispatchEvent(new CustomEvent('camlayout'));}catch(e){}},false));
+}
+renderPanel();
+const lbl=document.getElementById('roomlbl');
+const pip=document.getElementById('pip'),pipl=document.getElementById('pipl');
+function roomName(){
+  for(const [n,ox,oz,W,D] of ROOMS)
+    if(pos.x>=ox-20&&pos.x<=ox+W+20&&pos.z>=oz-20&&pos.z<=oz+D+20)return n;
+  return 'BETWEEN ROOMS';
+}
+let last=performance.now();
+function frame(now){
+  if(!document.body.classList.contains('viewer3d')){last=now;requestAnimationFrame(frame);return;}
+  const dt=Math.min(0.05,(now-last)/1000);last=now;
+  const sp=(keys['shift']?700:320)*dt;
+  const fx=-Math.sin(yaw),fz=-Math.cos(yaw),rx=-fz,rz=fx;
+  let mx=0,mz=0;
+  if(keys['w']||keys['arrowup']||padState.f){mx+=fx;mz+=fz;}
+  if(keys['s']||keys['arrowdown']||padState.b){mx-=fx;mz-=fz;}
+  if(keys['a']||keys['arrowleft']||padState.l){mx-=rx;mz-=rz;}
+  if(keys['d']||keys['arrowright']||padState.r){mx+=rx;mz+=rz;}
+  const Lm=Math.hypot(mx,mz);
+  if(Lm>0){pos.x+=mx/Lm*sp;pos.z+=mz/Lm*sp;}
+  pos.x=Math.max(-600,Math.min(6100,pos.x));
+  pos.z=Math.max(-800,Math.min(1300,pos.z));
+  const dpr=Math.min(devicePixelRatio||1,2);
+  if(cvs.width!==innerWidth*dpr||cvs.height!==innerHeight*dpr){
+    cvs.width=innerWidth*dpr;cvs.height=innerHeight*dpr;
+    gl.viewport(0,0,cvs.width,cvs.height);
+  }
+  gl.clearColor(SKY[0],SKY[1],SKY[2],1);
+  gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  let vp=mPersp(1.15,cvs.width/cvs.height,5,20000);
+  vp=mMul(vp,mRotX(-pitch));
+  vp=mMul(vp,mRotY(-yaw));
+  vp=mMul(vp,mTrans(-pos.x,-pos.y,-pos.z));
+  gl.uniformMatrix4fv(L.vp,false,new Float32Array(vp));
+  gl.uniform3f(L.light,0.38,0.78,0.44);
+  gl.uniform3f(L.sky,SKY[0],SKY[1],SKY[2]);
+  gl.uniform1f(L.fog,0);drawBuf(B.sky,TEX.flat,1);gl.uniform1f(L.fog,1);
+  for(const [m,t] of OPAQUE)drawBuf(B[m],TEX[t],0);
+  if(showFurn)drawBuf(B.furn,TEX.flat,0);
+  drawBuf(B.emis,TEX.flat,1);
+  if(showCams)for(const c of CAMOBJS)if(c.on)drawBuf(c.bo,TEX.flat,0);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+  gl.depthMask(false);
+  if(showFurn)drawBuf(B.shad,TEX.flat,0.9);
+  drawBuf(B.patch,TEX.flat,1);
+  drawBuf(B.glass,TEX.flat,0);
+  if(showCams)for(const c of CAMOBJS)if(c.on){
+    drawBuf(c.bt,TEX.flat,0.6);
+    drawBuf(c.bf,TEX.flat,0.55);
+    drawBuf(c.bl,TEX.flat,0.9,gl.LINES);
+  }
+  gl.depthMask(true);
+  gl.disable(gl.BLEND);
+  // picture-in-picture: live view from the selected camera
+  const scv=CAMOBJS.find(c2=>c2.code===selCode);
+  if(scv&&showCams){
+    const tp=TYPES[scv.type];
+    const asp2=scv.type==='usb'?1.6:1.334;
+    const hpx=210,wpx=Math.round(hpx*asp2);
+    pip.style.display='block';
+    pip.style.width=wpx+'px';pip.style.height=hpx+'px';
+    pip.style.borderColor=scv.colHex;
+    pipl.textContent=scv.code+' · '+tp.label+' · live view';
+    const [rn2,ox2,oz2]=ROOMS[scv.ri];
+    const cx2=ox2+scv.x,cz2=oz2+scv.y;
+    const dR=scv.dir*Math.PI/180;
+    const yaw2=Math.atan2(-Math.cos(dR),-Math.sin(dR));
+    const tilt2=(scv.tilt!==undefined?scv.tilt:tp.tilt)*Math.PI/180;
+    const pipBottom=matchMedia('(pointer:coarse)').matches?130:64;
+    const px0=cvs.width-Math.round((wpx+16)*dpr),py0=Math.round(pipBottom*dpr);
+    gl.enable(gl.SCISSOR_TEST);
+    gl.scissor(px0,py0,Math.round(wpx*dpr),Math.round(hpx*dpr));
+    gl.viewport(px0,py0,Math.round(wpx*dpr),Math.round(hpx*dpr));
+    gl.clearColor(SKY[0],SKY[1],SKY[2],1);
+    gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+    let vp2=mPersp(tp.vf*Math.PI/180,wpx/hpx,5,20000);
+    vp2=mMul(vp2,mRotX(tilt2));
+    vp2=mMul(vp2,mRotY(-yaw2));
+    vp2=mMul(vp2,mTrans(-cx2,-238,-cz2));
+    gl.uniformMatrix4fv(L.vp,false,new Float32Array(vp2));
+    gl.uniform1f(L.fog,0);drawBuf(B.sky,TEX.flat,1);gl.uniform1f(L.fog,1);
+    for(const [m,t] of OPAQUE)drawBuf(B[m],TEX[t],0);
+    if(showFurn)drawBuf(B.furn,TEX.flat,0);
+    drawBuf(B.emis,TEX.flat,1);
+    gl.enable(gl.BLEND);gl.depthMask(false);
+    if(showFurn)drawBuf(B.shad,TEX.flat,0.9);
+    drawBuf(B.patch,TEX.flat,1);
+    drawBuf(B.glass,TEX.flat,0);
+    gl.depthMask(true);gl.disable(gl.BLEND);
+    gl.disable(gl.SCISSOR_TEST);
+    gl.viewport(0,0,cvs.width,cvs.height);
+  }else pip.style.display='none';
+  lbl.textContent=roomName();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+})();</script>
+</section>
+</main>
+<script>
+var PAGES={overview:"page-overview",drawings:"page-drawings",viewer:"view3d"};
+function showPage(p){
+  var target=(p==="camplan")?"drawings":p;
+  for(var k in PAGES){document.getElementById(PAGES[k]).style.display=(k===target)?"block":"none";}
+  document.body.classList.toggle("viewer3d",target==="viewer");
+  var btns=document.querySelectorAll(".topnav button[data-p]");
+  for(var i=0;i<btns.length;i++)btns[i].classList.toggle("on",btns[i].getAttribute("data-p")===p);
+  try{history.replaceState(null,"","#"+p);}catch(e){}
+  window.scrollTo(0,0);
+  if(p==="camplan"){var el=document.getElementById("camstudy");if(el)setTimeout(function(){el.scrollIntoView({block:"start"});},30);}
+}
+function printDrawings(){showPage("drawings");setTimeout(function(){window.print();},150);}
+var initial=(location.hash||"#overview").slice(1);
+if(!(initial in PAGES)&&initial!=="camplan")initial="overview";
+showPage(initial);
+</script></html>
