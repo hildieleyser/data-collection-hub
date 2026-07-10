@@ -1844,16 +1844,22 @@ const CROOMS=[
   ['cameng',1100,500,[366,733],'ENGINEERING'],
   ['camrob',1340,384,[447,893],'ROBOTICS']
 ];
+let CPUB=null,camSrc='ISSUED PLAN';
+try{
+  fetch('camera-layout.json').then(r=>r.ok?r.json():null).then(j=>{
+    if(Array.isArray(j)&&j.length){CPUB=j;renderCamPlans();}
+  }).catch(()=>{});
+}catch(e){}
 function camLayout(){
   try{
     const s=JSON.parse(localStorage.getItem('camLayout-v2'));
-    if(Array.isArray(s)&&s.length)return s;
+    if(Array.isArray(s)&&s.length){camSrc='LIVE WALKTHROUGH LAYOUT (THIS BROWSER)';return s;}
   }catch(e){}
-  return CDEF;
+  if(CPUB){camSrc='PUBLISHED PLAN';return CPUB;}
+  camSrc='ISSUED PLAN';return CDEF;
 }
 function renderCamPlans(){
   const cams=camLayout();
-  const live=cams!==CDEF;
   CROOMS.forEach((RM,ri)=>{
     const [id,W,D,zones,title]=RM;
     const s=document.getElementById(id);
@@ -1879,7 +1885,7 @@ function renderCamPlans(){
       T(s,lx,ly,`${c.code} · ${t.lbl}`,'lbl');
     }
     const hidden=cams.filter(c=>c.ri===ri&&c.on===false).length;
-    T(s,W/2,D+44,`${title} · ${here.length} CAMERA${here.length===1?'':'S'}${hidden?` (+${hidden} HIDDEN)`:''}${live?' · LIVE WALKTHROUGH LAYOUT':' · ISSUED PLAN'}`,'lbl2');
+    T(s,W/2,D+44,`${title} · ${here.length} CAMERA${here.length===1?'':'S'}${hidden?` (+${hidden} HIDDEN)`:''} · ${camSrc}`,'lbl2');
   });
 }
 renderCamPlans();
@@ -2537,7 +2543,19 @@ function initCams(list){
 }
 let storedLayout=null;
 try{storedLayout=JSON.parse(localStorage.getItem('camLayout-v2'));}catch(e){}
-initCams(Array.isArray(storedLayout)&&storedLayout.length?storedLayout:DEFAULT_CAMS);
+const hadStored=Array.isArray(storedLayout)&&storedLayout.length;
+initCams(hadStored?storedLayout:DEFAULT_CAMS);
+// published team plan (camera-layout.json alongside the site); personal
+// browser drafts override it, Reset returns to it
+let PLAN=DEFAULT_CAMS;
+try{
+  fetch('camera-layout.json').then(r=>r.ok?r.json():null).then(j=>{
+    if(Array.isArray(j)&&j.length){
+      PLAN=j;
+      if(!hadStored){initCams(PLAN);renderPanel();}
+    }
+  }).catch(()=>{});
+}catch(e){}
 
 const B={};
 for(const k in M)B[k]=M[k].buffers();
@@ -2700,9 +2718,15 @@ function renderPanel(){
       const j=JSON.stringify(serializeCams(),null,1);
       if(navigator.clipboard)navigator.clipboard.writeText(j).catch(()=>{});
       prompt('Camera layout JSON (also copied to clipboard):',j);},false),
-      mk('Reset to plan',()=>{
+      mk('Download layout file',()=>{
+      const j=JSON.stringify(serializeCams(),null,1);
+      const bl=new Blob([j],{type:'application/json'});
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(bl);a.download='camera-layout.json';a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href),2000);},false));
+  row(mk('Reset to published plan',()=>{
       try{localStorage.removeItem('camLayout-v2');}catch(e){}
-      selCode=null;setMode('walk');initCams(DEFAULT_CAMS);renderPanel();
+      selCode=null;setMode('walk');initCams(PLAN);renderPanel();
       try{window.dispatchEvent(new CustomEvent('camlayout'));}catch(e){}},false));
 }
 renderPanel();
